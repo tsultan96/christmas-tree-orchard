@@ -29,8 +29,19 @@
 
     <p>We deliver in Virginia only.</p>
 
+    <label for="delivery_date">Delivery Date</label>
+    <input type="date" id="delivery_date" name="delivery_date" required>
 
+    <label for="time_window">Time Window of Delivery</label>
+    <select id="time_window" name="time_window" required>
+        <option value="">Choose a time</option>
+        <option value="morning">Morning (9am–12pm)</option>
+        <option value="afternoon">Afternoon (12–4pm)</option>
+        <option value="evening">Evening (4–7pm)</option>
+    </select>
 
+    <label for="delivery_notes">Delivery Notes (Optional)</label>
+    <textarea id="delivery_notes" name="delivery_notes" rows="3" placeholder="Gate Code, Parking, Where to leave the Tree"></textarea>
     <button type="submit">Send</button>
 
 </form>
