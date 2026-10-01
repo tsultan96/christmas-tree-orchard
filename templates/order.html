@@ -2,6 +2,17 @@
 
 <h1> Your Christmas Tree is 1 Order Away!!!</h1>
 
+{% if errors %}
+<article>
+    <p><strong>Please fix the following:</strong></p>
+    <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
 <form method="post">
 
     <h2>Your tree</h2>
