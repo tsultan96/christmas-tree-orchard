@@ -75,7 +75,7 @@
     <p>We deliver in Virginia only.</p>
 
     <label for="delivery_date">Delivery Date</label>
-    <input type="date" id="delivery_date" name="delivery_date" required>
+    <input type="date" id="delivery_date" name="delivery_date" value="{{ form.delivery_date }}" min="{{ today }}" required>
 
     <label for="time_window">Time Window of Delivery</label>
     <select id="time_window" name="time_window" required>
@@ -86,7 +86,7 @@
     </select>
 
     <label for="delivery_notes">Delivery Notes (Optional)</label>
-    <textarea id="delivery_notes" name="delivery_notes" rows="3" placeholder="Gate Code, Parking, Where to leave the Tree"></textarea>
+    <textarea id="delivery_notes" name="delivery_notes" rows="3" placeholder="Gate Code, Parking, Where to leave the Tree">{{form.delivery_notes}}</textarea>
 
     <h2>Payment</h2>
 

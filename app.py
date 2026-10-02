@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request
+from datetime import date
+
 
 app = Flask(__name__)
 
@@ -54,12 +56,13 @@ def order():
                 order_data["quantity"] = None
             errors = validate_order(order_data)
             if errors:
-                return render_template("order.html", errors=errors, form=order_data)
+                return render_template("order.html", errors=errors, form=order_data, today=date.today().isoformat())
+
 
             print(order_data)
             return "Thanks! We got your Order."
 
-    return render_template("order.html", form={})
+    return render_template("order.html", form={}, today = date.today().isoformat())
 
 if __name__ == "__main__":
     app.run(debug=True)
