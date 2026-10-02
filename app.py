@@ -54,12 +54,12 @@ def order():
                 order_data["quantity"] = None
             errors = validate_order(order_data)
             if errors:
-                return render_template("order.html", errors=errors)
+                return render_template("order.html", errors=errors, form=order_data)
 
             print(order_data)
             return "Thanks! We got your Order."
 
-    return render_template("order.html")
+    return render_template("order.html", form={})
 
 if __name__ == "__main__":
     app.run(debug=True)
