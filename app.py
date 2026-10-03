@@ -26,7 +26,15 @@ def validate_order(data):
 
     if data["quantity"] is None or not 1 <= data["quantity"] <= 50:
         errors.append("Please enter a quantity between 1 and 50.")
-
+        
+    if data["delivery_date"]:
+        try:
+            chosen_date = date.fromisoformat(data["delivery_date"])
+        except ValueError:
+            errors.append("Please enter a valid delivery date.")
+        else:
+            if chosen_date < date.today():
+                errors.append("The delivery date can't be in the past.")
     return errors
 
 
