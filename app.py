@@ -3,9 +3,11 @@ import smtplib
 from datetime import date, datetime
 from email.message import EmailMessage
 
+from flask import Flask, redirect, render_template, request, url_for
+
+
 import gspread
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
 
 
 
@@ -85,6 +87,13 @@ def get_orders_for(day):
             order["row"] = row_number
             result.append(order)
     return result
+
+DELIVERED_COLUMN = 17  # column Q in the sheet: "Delivered"
+
+
+def set_delivered(row, delivered):
+    get_sheet().update_cell(row, DELIVERED_COLUMN, "Yes" if delivered else "No")
+
 
 
 def send_alert(data):
@@ -176,6 +185,12 @@ def admin():
     day = request.args.get("date", date.today().isoformat())
     orders = get_orders_for(day)
     return render_template("admin.html", orders=orders, day=day)
+
+@app.route("/admin/delivered", methods=["POST"])
+def mark_delivered():
+    row = int(request.form["row"])
+    set_delivered(row, request.form["delivered"] == "Yes")
+    return redirect(url_for("admin", date=request.form["date"]))
 
 
 if __name__ == "__main__":
