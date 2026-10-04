@@ -168,7 +168,7 @@ def order():
             except Exception as e:
                 print(f"Alert email failed: {e}")
             return render_template("thanks.html", order=order_data)
-
+    return render_template("order.html", form={}, today=date.today().isoformat())
 
 
 @app.route("/admin")
@@ -177,8 +177,6 @@ def admin():
     orders = get_orders_for(day)
     return render_template("admin.html", orders=orders, day=day)
 
-
-    return render_template("order.html", form={}, today = date.today().isoformat())
 
 if __name__ == "__main__":
     app.run(debug=True)
