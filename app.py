@@ -170,7 +170,13 @@ def order():
             return render_template("thanks.html", order=order_data)
 
 
-            
+
+@app.route("/admin")
+def admin():
+    day = request.args.get("date", date.today().isoformat())
+    orders = get_orders_for(day)
+    return render_template("admin.html", orders=orders, day=day)
+
 
     return render_template("order.html", form={}, today = date.today().isoformat())
 

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Deliveries{% endblock %}
+{% block content %}
+
+<h1>Deliveries for {{ day }}</h1>
+
+<form method="get">
+    <input type="date" name="date" value="{{ day }}">
+    <button type="submit">Show</button>
+</form>
+
+{% if orders %}
+<div class="overflow-auto">
+<table>
+    <thead>
+        <tr>
+            <th>Time</th><th>Name</th><th>Phone</th><th>Address</th>
+            <th>Tree</th><th>Notes</th><th>Payment</th><th>Delivered</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o["Time window"] }}</td>
+            <td>{{ o["Name"] }}</td>
+            <td>{{ o["Phone"] }}</td>
+            <td>{{ o["Street"] }} {{ o["Apt"] }}, {{ o["City"] }} {{ o["ZIP"] }}</td>
+            <td>{{ o["Quantity"] }} × {{ o["Species"] }}, {{ o["Size"] }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</td>
+            <td>{{ o["Notes"] }}</td>
+            <td>{{ o["Payment"] }}</td>
+            <td>{{ o["Delivered"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>No deliveries for this day.</p>
+{% endif %}
+
+{% endblock %}
