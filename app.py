@@ -2,9 +2,8 @@ import os
 import smtplib
 from datetime import date, datetime
 from email.message import EmailMessage
-
-from flask import Flask, redirect, render_template, request, url_for
-
+import secrets
+from flask import Flask, redirect, render_template, request, session, url_for
 
 import gspread
 from dotenv import load_dotenv
@@ -16,6 +15,8 @@ load_dotenv()
 
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY")
+
 
 REQUIRED_FIELDS = {
     "species": "a tree type",
@@ -179,15 +180,32 @@ def order():
             return render_template("thanks.html", order=order_data)
     return render_template("order.html", form={}, today=date.today().isoformat())
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        typed = request.form.get("password", "")
+        if secrets.compare_digest(typed, os.getenv("ADMIN_PASSWORD")):
+            session["admin"] = True
+            return redirect(url_for("admin"))
+        error = "Wrong password."
+    return render_template("login.html", error=error)
+
 
 @app.route("/admin")
 def admin():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+
     day = request.args.get("date", date.today().isoformat())
     orders = get_orders_for(day)
     return render_template("admin.html", orders=orders, day=day)
 
 @app.route("/admin/delivered", methods=["POST"])
 def mark_delivered():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+
     row = int(request.form["row"])
     set_delivered(row, request.form["delivered"] == "Yes")
     return redirect(url_for("admin", date=request.form["date"]))
