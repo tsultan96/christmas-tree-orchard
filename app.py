@@ -1,5 +1,13 @@
+import os
+from datetime import date, datetime
+
+import gspread
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
-from datetime import date
+
+
+load_dotenv()
+
 
 
 app = Flask(__name__)
@@ -37,6 +45,31 @@ def validate_order(data):
                 errors.append("The delivery date can't be in the past.")
     return errors
 
+def save_order(data):
+    client = gspread.service_account(filename=os.getenv("GOOGLE_CREDENTIALS_FILE"))
+    sheet = client.open_by_key(os.getenv("SHEET_ID")).sheet1
+
+    row = [
+        datetime.now().strftime("%Y-%m-%d %H:%M"),
+        data["name"],
+        data["phone"],
+        data["email"],
+        data["species"],
+        data["tree_size"],
+        data["quantity"],
+        "Yes" if data["flocked"] else "No",
+        data["street"],
+        data["apt"],
+        data["city"],
+        data["zip"],
+        data["delivery_date"],
+        data["time_window"],
+        data["delivery_notes"],
+        data["payment"],
+        "No",
+    ]
+    sheet.append_row(row)
+
 
 @app.route("/order", methods=["GET", "POST"])
 def order():
@@ -67,7 +100,7 @@ def order():
                 return render_template("order.html", errors=errors, form=order_data, today=date.today().isoformat())
 
 
-            print(order_data)
+            save_order(order_data)
             return "Thanks! We got your Order."
 
     return render_template("order.html", form={}, today = date.today().isoformat())
