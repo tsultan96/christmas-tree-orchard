@@ -1,9 +1,12 @@
 import os
+import smtplib
 from datetime import date, datetime
+from email.message import EmailMessage
 
 import gspread
 from dotenv import load_dotenv
 from flask import Flask, render_template, request
+
 
 
 load_dotenv()
@@ -69,6 +72,29 @@ def save_order(data):
         "No",
     ]
     sheet.append_row(row)
+    
+
+def send_alert(data):
+    msg = EmailMessage()
+    msg["Subject"] = f"New tree order from {data['name']}"
+    msg["From"] = os.getenv("EMAIL_ADDRESS")
+    msg["To"] = os.getenv("ALERT_TO")
+    msg.set_content(
+        f"Name: {data['name']}\n"
+        f"Phone: {data['phone']}\n"
+        f"Tree: {data['quantity']} x {data['species']}, {data['tree_size']}"
+        f"{' (flocked)' if data['flocked'] else ''}\n"
+        f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n"
+        f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
+        f"Notes: {data['delivery_notes']}\n"
+        f"Payment: {data['payment']}\n"
+    )
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_APP_PASSWORD"))
+        smtp.send_message(msg)
+
+
 
 
 @app.route("/order", methods=["GET", "POST"])
@@ -101,7 +127,13 @@ def order():
 
 
             save_order(order_data)
+            try:
+                send_alert(order_data)
+            except Exception as e:
+                print(f"Alert email failed: {e}")
             return "Thanks! We got your Order."
+
+            
 
     return render_template("order.html", form={}, today = date.today().isoformat())
 
