@@ -191,6 +191,11 @@ def login():
         error = "Wrong password."
     return render_template("login.html", error=error)
 
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 
 @app.route("/admin")
 def admin():

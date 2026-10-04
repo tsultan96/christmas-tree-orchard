@@ -4,6 +4,11 @@
 
 <h1>Deliveries for {{ day }}</h1>
 
+<form method="post" action="{{ url_for('logout') }}">
+    <button type="submit" class="secondary outline">Log out</button>
+</form>
+
+
 <form method="get">
     <input type="date" name="date" value="{{ day }}">
     <button type="submit">Show</button>
