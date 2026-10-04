@@ -131,7 +131,8 @@ def order():
                 send_alert(order_data)
             except Exception as e:
                 print(f"Alert email failed: {e}")
-            return "Thanks! We got your Order."
+            return render_template("thanks.html", order=order_data)
+
 
             
 
