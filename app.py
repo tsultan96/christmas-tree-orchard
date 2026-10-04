@@ -93,6 +93,26 @@ def send_alert(data):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_APP_PASSWORD"))
         smtp.send_message(msg)
+        
+def send_confirmation(data):
+    msg = EmailMessage()
+    msg["Subject"] = "Your Christmas tree order is confirmed"
+    msg["From"] = os.getenv("EMAIL_ADDRESS")
+    msg["To"] = data["email"]
+    msg.set_content(
+        f"Hi {data['name']},\n\n"
+        f"Thanks for your order! Here are the details:\n\n"
+        f"Tree: {data['quantity']} x {data['species']}, {data['tree_size']}"
+        f"{' (flocked)' if data['flocked'] else ''}\n"
+        f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
+        f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n\n"
+        f"We'll call you at {data['phone']} if we have any questions.\n"
+    )
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_APP_PASSWORD"))
+        smtp.send_message(msg)
+
 
 
 
@@ -129,6 +149,9 @@ def order():
             save_order(order_data)
             try:
                 send_alert(order_data)
+                if order_data["email"]:
+                    send_confirmation(order_data)
+
             except Exception as e:
                 print(f"Alert email failed: {e}")
             return render_template("thanks.html", order=order_data)
