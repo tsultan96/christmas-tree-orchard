@@ -1,1 +1,41 @@
-<h1>Welcome to Santa's Christmas Tree Orchard</h1>
+{% extends "base.html" %}
+{% block title %}Santa's Christmas Tree Orchard{% endblock %}
+{% block content %}
+
+<h1>Santa's Christmas Tree Orchard</h1>
+<p>Fresh-cut Virginia Christmas trees, delivered to your door. Order online in two minutes. No phone calls needed.</p>
+
+<a href="{{ url_for('order') }}" role="button">Order your tree</a>
+
+<h2>Prices</h2>
+<div class="overflow-auto">
+<table>
+    <thead>
+        <tr><th>Size</th><th>Per tree</th><th>Per dozen</th></tr>
+    </thead>
+    <tbody>
+        {% for size, price in prices.items() %}
+        <tr>
+            <td>{{ size }}</td>
+            <td>${{ price }}</td>
+            <td>${{ (price * 12 * (1 - dozen_discount)) | round | int }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<p>Want it white? Flocking (artificial snow) is <strong>${{ flocking_price }}</strong> per tree.<br>
+Order 12 or more and save {{ (dozen_discount * 100) | int }}%.</p>
+
+<h2>Our trees</h2>
+<ul>
+    <li><strong>Fraser fir</strong>: soft needles, great needle retention</li>
+    <li><strong>Douglas fir</strong>: full shape and a sweet scent</li>
+    <li><strong>White pine</strong>: long, soft needles and a light look</li>
+    <li><strong>Norway spruce</strong>: classic shape with sturdy branches</li>
+</ul>
+
+<h2>Delivery</h2>
+<p>We deliver anywhere in Virginia. Choose a morning, afternoon or evening window when you order.</p>
+
+{% endblock %}

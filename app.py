@@ -30,6 +30,15 @@ REQUIRED_FIELDS = {
     "payment": "a payment method",
 }
 
+PRICES = {
+    "3ft": 100,
+    "5ft": 150,
+    "8ft": 200,
+    "12ft": 250,
+}
+FLOCKING_PRICE = 25
+DOZEN_DISCOUNT = 0.10
+
 
 def validate_order(data):
     errors = []
@@ -138,6 +147,16 @@ def send_confirmation(data):
 
 
 
+
+
+@app.route("/")
+def index():
+    return render_template(
+        "index.html",
+        prices=PRICES,
+        flocking_price=FLOCKING_PRICE,
+        dozen_discount=DOZEN_DISCOUNT,
+    )
 
 
 @app.route("/order", methods=["GET", "POST"])
