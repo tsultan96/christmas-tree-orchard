@@ -48,9 +48,13 @@ def validate_order(data):
                 errors.append("The delivery date can't be in the past.")
     return errors
 
-def save_order(data):
+def get_sheet():
     client = gspread.service_account(filename=os.getenv("GOOGLE_CREDENTIALS_FILE"))
-    sheet = client.open_by_key(os.getenv("SHEET_ID")).sheet1
+    return client.open_by_key(os.getenv("SHEET_ID")).sheet1
+
+def save_order(data):
+    sheet = get_sheet()
+
 
     row = [
         datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -72,7 +76,16 @@ def save_order(data):
         "No",
     ]
     sheet.append_row(row)
-    
+
+def get_orders_for(day):
+    orders = get_sheet().get_all_records(numericise_ignore=["all"])
+    result = []
+    for row_number, order in enumerate(orders, start=2):
+        if order["Delivery date"] == day:
+            order["row"] = row_number
+            result.append(order)
+    return result
+
 
 def send_alert(data):
     msg = EmailMessage()
