@@ -1,4 +1,11 @@
-{% extends "base.html" %} {% block title %}Order a tree{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Order a tree{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+{% endblock %}
+
+{% block content %}
 
 <h1> Your Christmas Tree is 1 Order Away!!!</h1>
 

@@ -2,68 +2,7 @@
 {% block title %}Order received{% endblock %}
 
 {% block head %}
-<style>
-    body {
-        color: #ffffff;
-        background-color: #2a4174;
-        background-image: linear-gradient(#2a4174, #314b7f);
-        background-attachment: fixed;
-        min-height: 100vh;
-        /* room at the bottom for the snowbank, so text never sits on white snow */
-        position: relative;
-        padding-bottom: 140px;
-    }
-
-    /* snowy ground along the bottom, colors taken from the photo's snow */
-    body::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 140px;
-        pointer-events: none;
-        background-repeat: no-repeat;
-        background-image:
-            radial-gradient(ellipse 45% 70% at 12% 100%, #e3e9f4 98%, transparent 100%),
-            radial-gradient(ellipse 40% 60% at 50% 100%, #d6deed 98%, transparent 100%),
-            radial-gradient(ellipse 45% 75% at 90% 100%, #e3e9f4 98%, transparent 100%),
-            linear-gradient(transparent 55%, #c9d2e4 55%);
-    }
-    h1 { color: #ffffff; }
-    article { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
-    .santa { width: 100%; border-radius: 12px; }
-
-    /* falling snow layer over the whole page, including the photo */
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 10;
-        background-image:
-            radial-gradient(circle, rgba(255, 255, 255, 0.9) 2px, transparent 2.5px),
-            radial-gradient(circle, rgba(255, 255, 255, 0.6) 1.5px, transparent 2px),
-            radial-gradient(circle, rgba(255, 255, 255, 0.4) 1px, transparent 1.5px);
-        background-repeat: repeat;
-        /* uneven tile sizes so the flakes don't line up in a grid */
-        background-size: 137px 113px, 89px 97px, 53px 61px;
-        background-position: 0 0, 40px 60px, 25px 10px;
-        animation: snowfall 12s linear infinite;
-    }
-
-    /* each layer falls exactly one tile height, so the loop is seamless */
-    @keyframes snowfall {
-        to {
-            background-position: 0 113px, 40px 157px, 25px 71px;
-        }
-    }
-
-    /* respect visitors who turn off animations in their device settings */
-    @media (prefers-reduced-motion: reduce) {
-        body::before { animation: none; }
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 {% endblock %}
 
 {% block content %}

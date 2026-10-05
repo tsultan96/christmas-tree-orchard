@@ -141,7 +141,7 @@ def send_confirmation(data):
         f"We'll call you at {data['phone']} if we have any questions.\n"
     )
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as smtp:
         smtp.login(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_APP_PASSWORD"))
         smtp.send_message(msg)
 
