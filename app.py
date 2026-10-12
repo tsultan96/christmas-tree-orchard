@@ -71,10 +71,12 @@ def order_total(data):
         total = total * (1 - DOZEN_DISCOUNT)
     return round(total * 100)
 
-def create_checkout(data):
+def create_checkout(data, row):
     """Create a Stripe Checkout page for this order and return its URL."""
     checkout = stripe.checkout.Session.create(
         mode="payment",
+        metadata={"row": row},
+
         line_items=[{
             "price_data": {
                 "currency": "usd",
@@ -117,8 +119,12 @@ def save_order(data):
         data["delivery_notes"],
         data["payment"],
         "No",
+        "Cash" if data["payment"] == "cash" else "No",
     ]
-    sheet.append_row(row)
+    result = sheet.append_row(row)
+    updated_range = result["updates"]["updatedRange"]   # e.g. "Sheet1!A23:R23"
+    return int(updated_range.split("!")[1].split(":")[0][1:])
+
 
 def get_orders_for(day):
     orders = get_sheet().get_all_records(numericise_ignore=["all"])
@@ -135,6 +141,11 @@ DELIVERED_COLUMN = 17  # column Q in the sheet: "Delivered"
 def set_delivered(row, delivered):
     get_sheet().update_cell(row, DELIVERED_COLUMN, "Yes" if delivered else "No")
 
+PAID_COLUMN = 18  # column R in the sheet: "Paid"
+
+
+def set_paid(row):
+    get_sheet().update_cell(row, PAID_COLUMN, "Yes")
 
 
 def send_alert(data):
@@ -219,7 +230,7 @@ def order():
                 return render_template("order.html", errors=errors, form=order_data, today=date.today().isoformat())
 
 
-            save_order(order_data)
+            row = save_order(order_data)
             try:
                 send_alert(order_data)
                 if order_data["email"]:
@@ -230,7 +241,7 @@ def order():
 
             if order_data["payment"] == "card":
                 session["last_order"] = order_data
-                return redirect(create_checkout(order_data))
+                return redirect(create_checkout(order_data, row))
             return render_template("thanks.html", order=order_data)
     return render_template("order.html", form={}, today=date.today().isoformat())
 
@@ -242,7 +253,10 @@ def paid():
         checkout = stripe.checkout.Session.retrieve(request.args.get("session_id", ""))
     except stripe.StripeError:
         return redirect(url_for("index"))
-    if not order or checkout.payment_status != "paid":
+    if checkout.payment_status != "paid":
+        return redirect(url_for("index"))
+    set_paid(int(checkout.metadata["row"]))
+    if not order:
         return redirect(url_for("index"))
     return render_template("thanks.html", order=order)
 
