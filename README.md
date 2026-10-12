@@ -1,6 +1,8 @@
 # Christmas Tree Orchard: direct-order web app
 
-A small Flask web app where customers browse Christmas trees and place a delivery order online, with no phone calls. Orders are saved to a Google Sheet, the business gets an email alert, and a password-protected admin page shows each day's deliveries with a "delivered" toggle.
+**Live demo:** https://christmas-tree-orchard.onrender.com (free hosting, so the first load can take about a minute to wake up)
+
+A small Flask web app where customers browse Christmas trees and place a delivery order online, with no phone calls. Orders are saved to a Google Sheet, the business gets an email alert, customers can pay by card through Stripe, and a password-protected admin page shows each day's deliveries with a "delivered" toggle.
 
 Built as a two-week learning project to refresh my Python skills.
 
@@ -8,13 +10,14 @@ Built as a two-week learning project to refresh my Python skills.
 
 - Landing page: tree types, sizes, and prices (prices are placeholders)
 - Order form: validated in the browser and on the server; keeps the customer's input after an error
+- Card payments: Stripe Checkout in test mode. Try card `4242 4242 4242 4242` with any future expiry date, any CVC, and any ZIP. No real money is charged.
 - Google Sheets storage: each valid order is appended as a row via a service account
 - Email alerts: the business gets every new order; customers get a confirmation if they left an email
 - Admin view: deliveries for any date, mark orders delivered/undelivered, login/logout with a session
 
 ## Tech
 
-Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · smtplib (Gmail) · python-dotenv
+Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · Stripe Checkout · smtplib (Gmail) · python-dotenv · gunicorn on Render
 
 Server-rendered HTML.
 
@@ -25,6 +28,10 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
                                     │                    │
                               errors? show form     send_alert() ──▶ business inbox
                               with values kept      send_confirmation() ──▶ customer
+                                                         │
+                                         paying by card? create_checkout() ──▶ Stripe page
+                                                         │
+                                         /paid confirms with Stripe ──▶ thank-you page
 ```
 
 ## Run it locally
@@ -40,7 +47,8 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
 2. Google Sheets: create a Google Cloud project, enable the Sheets API, create a service account,
    download its JSON key as `credentials.json`, and share your sheet with the service account's email.
 3. Gmail: create an App Password for the sending account.
-4. Create a `.env` file in the project root:
+4. Stripe: create an account, switch to the sandbox (test mode), and copy the secret key (`sk_test_...`).
+5. Create a `.env` file in the project root:
    ```
    SHEET_ID=
    GOOGLE_CREDENTIALS_FILE=credentials.json
@@ -49,8 +57,11 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
    ALERT_TO=
    SECRET_KEY=
    ADMIN_PASSWORD=
+   STRIPE_SECRET_KEY=
    ```
-5. Run `python app.py` and open http://127.0.0.1:5000
+6. Run `python app.py` and open http://127.0.0.1:5000
+
+Note: email alerts work locally, but Render's free tier blocks outgoing email (SMTP), so the live demo saves orders without sending emails.
 
 ## Security notes
 
@@ -58,7 +69,8 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
 - Every admin route checks the session, not just the admin page.
 - The password check uses `secrets.compare_digest` (constant time).
 - State-changing actions (`/admin/delivered`, `/logout`) are POST-only, with redirect-after-POST.
-- Card payments are deliberately **not** collected; a future version would use a hosted checkout (e.g. Stripe Checkout), so card numbers never touch this app.
+- Card payments go through Stripe Checkout, so card numbers never touch this app. The price is calculated on the server from `PRICES` (never taken from the form), and `/paid` confirms the payment with Stripe before showing the thank-you page.
+
 
 ## What I learned
 
@@ -77,12 +89,10 @@ I tested every piece as I went, in the browser and directly in the Python shell 
 
 I wrote most of the code myself, with Claude as a coach: it explained new concepts, reviewed each piece, and helped me debug. When I got stuck, it sometimes made a fix directly, which I then read through to understand. The Google Cloud and service-account setup would have taken me days to figure out alone; with coaching it took an afternoon.
 
-
-
 ## Next steps
 
-- Deploy online
-- Automated tests (pytest) for `validate_order`
-- Online card payment via hosted checkout
+- Paid column in the sheet, so unpaid card orders are easy to spot
+- Customer accounts (sign up / log in, order history)
+- Automated tests (pytest) for `validate_order` and `order_total`
 - Spanish/English switch
 - Split `app.py` into modules (`sheets.py`, admin Blueprint)
