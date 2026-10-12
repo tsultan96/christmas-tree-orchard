@@ -5,12 +5,13 @@ from email.message import EmailMessage
 import secrets
 from flask import Flask, redirect, render_template, request, session, url_for
 
-import gspread
+import gspread, stripe
 from dotenv import load_dotenv
 
 
 
 load_dotenv()
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 
@@ -59,6 +60,36 @@ def validate_order(data):
             if chosen_date < date.today():
                 errors.append("The delivery date can't be in the past.")
     return errors
+
+def order_total(data):
+    """Return the order total in cents, calculated from our own PRICES."""
+    per_tree = PRICES[data["tree_size"]]
+    if data["flocked"]:
+        per_tree += FLOCKING_PRICE
+    total = per_tree * data["quantity"]
+    if data["quantity"] >= 12:
+        total = total * (1 - DOZEN_DISCOUNT)
+    return round(total * 100)
+
+def create_checkout(data):
+    """Create a Stripe Checkout page for this order and return its URL."""
+    checkout = stripe.checkout.Session.create(
+        mode="payment",
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "unit_amount": order_total(data),
+                "product_data": {
+                    "name": f"{data['quantity']} x {data['species']}, {data['tree_size']}",
+                },
+            },
+            "quantity": 1,
+        }],
+        success_url=url_for("paid", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url=url_for("order", _external=True),
+    )
+    return checkout.url
+
 
 def get_sheet():
     client = gspread.service_account(filename=os.getenv("GOOGLE_CREDENTIALS_FILE"))
@@ -196,8 +227,24 @@ def order():
 
             except Exception as e:
                 print(f"Alert email failed: {e}")
+
+            if order_data["payment"] == "card":
+                session["last_order"] = order_data
+                return redirect(create_checkout(order_data))
             return render_template("thanks.html", order=order_data)
     return render_template("order.html", form={}, today=date.today().isoformat())
+
+
+@app.route("/paid")
+def paid():
+    order = session.get("last_order")
+    try:
+        checkout = stripe.checkout.Session.retrieve(request.args.get("session_id", ""))
+    except stripe.StripeError:
+        return redirect(url_for("index"))
+    if not order or checkout.payment_status != "paid":
+        return redirect(url_for("index"))
+    return render_template("thanks.html", order=order)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
