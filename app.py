@@ -9,7 +9,7 @@ from flask import Flask, redirect, render_template, request, session, url_for
 from emails import send_alert, send_confirmation
 from orders import DOZEN_DISCOUNT, FLOCKING_PRICE, PRICES, validate_order
 from payments import create_checkout, paid_row
-from sheets import get_orders_for, save_order, set_delivered, set_paid
+from sheets import create_customer, find_customer, get_orders_for, save_order, set_delivered, set_paid
 
 
 load_dotenv()
@@ -32,6 +32,37 @@ def index():
 @app.route("/member")
 def member():
     return render_template("member.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    errors = []
+    form = {}
+    if request.method == "POST":
+        form = {
+            "email": request.form.get("email", "").strip().lower(),
+            "name": request.form.get("name", "").strip(),
+            "phone": request.form.get("phone", "").strip(),
+        }
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+
+        if "@" not in form["email"]:
+            errors.append("Please enter a valid email.")
+        if not form["name"]:
+            errors.append("Please enter your name.")
+        if len(password) < 8:
+            errors.append("Your password needs at least 8 characters.")
+        if password != confirm:
+            errors.append("The two passwords don't match.")
+        if not errors and find_customer(form["email"]):
+            errors.append("An account with this email already exists. Try logging in.")
+
+        if not errors:
+            create_customer(form["email"], form["name"], form["phone"], password)
+            session["customer"] = form["email"]
+            return redirect(url_for("index"))
+    return render_template("signup.html", errors=errors, form=form)
 
 
 @app.route("/order", methods=["GET", "POST"])

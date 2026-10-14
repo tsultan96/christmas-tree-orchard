@@ -18,7 +18,7 @@
             <nav>
                 <ul>
                     <li><a href="{{ url_for('order') }}" role="button">Order as guest</a></li>
-                    <li><a href="{{ url_for('member') }}">Sign up</a></li>
+                    <li><a href="{{ url_for('signup') }}">Sign up</a></li>
                     <li><a href="{{ url_for('member') }}">Log in</a></li>
                     {% if session.get("admin") %}
                         <li><a href="{{ url_for('admin') }}">Deliveries</a></li>
