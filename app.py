@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash
 from emails import send_alert, send_confirmation
 from orders import (
     DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES,
-    delivered_count, is_premium, validate_order,
+    delivered_count, is_premium, order_total, validate_order,
 )
 from payments import create_checkout, paid_row
 from sheets import create_customer, find_customer, get_orders_for_customer, get_orders_for_month, save_order, set_delivered, set_paid
@@ -110,8 +110,15 @@ def account_logout():
     return redirect(url_for("index"))
 
 
+def current_customer_is_premium():
+    """Premium only counts for a LOGGED-IN customer, checked against their own delivered orders."""
+    email = session.get("customer")
+    return bool(email) and is_premium(get_orders_for_customer(email))
+
+
 @app.route("/order", methods=["GET", "POST"])
 def order():
+    premium = current_customer_is_premium()
     if request.method == "POST":
         order_data = {
             "species": request.form.get("species", "").strip(),
@@ -140,8 +147,10 @@ def order():
             order_data["quantity"] = None
         errors = validate_order(order_data)
         if errors:
-            return render_template("order.html", errors=errors, form=order_data, today=date.today().isoformat())
+            return render_template("order.html", errors=errors, form=order_data, premium=premium, today=date.today().isoformat())
 
+        order_data["premium"] = premium
+        order_data["total"] = order_total(order_data, premium)  # cents
         row = save_order(order_data)
         try:
             send_alert(order_data)
@@ -152,14 +161,14 @@ def order():
 
         if order_data["payment"] == "card":
             session["last_order"] = order_data
-            return redirect(create_checkout(order_data, row))
+            return redirect(create_checkout(order_data, row, premium))
         return render_template("thanks.html", order=order_data)
     form = {}
     if session.get("customer"):
         customer = find_customer(session["customer"])
         if customer:
             form = {"name": customer["Name"], "email": customer["Email"], "phone": customer["Phone"]}
-    return render_template("order.html", form=form, today=date.today().isoformat())
+    return render_template("order.html", form=form, premium=premium, today=date.today().isoformat())
 
 
 @app.route("/paid")

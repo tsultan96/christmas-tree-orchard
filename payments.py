@@ -6,7 +6,7 @@ from flask import url_for
 from orders import order_total
 
 
-def create_checkout(data, row):
+def create_checkout(data, row, premium=False):
     """Create a Stripe Checkout page for this order and return its URL."""
     checkout = stripe.checkout.Session.create(
         mode="payment",
@@ -14,9 +14,10 @@ def create_checkout(data, row):
         line_items=[{
             "price_data": {
                 "currency": "usd",
-                "unit_amount": order_total(data),
+                "unit_amount": order_total(data, premium),
                 "product_data": {
-                    "name": f"{data['quantity']} x {data['species']}, {data['tree_size']}",
+                    "name": f"{data['quantity']} x {data['species']}, {data['tree_size']}"
+                            + (" (Premium 5% off)" if premium else ""),
                 },
             },
             "quantity": 1,

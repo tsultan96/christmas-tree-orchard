@@ -44,6 +44,9 @@ def validate_order(data):
         if data[field] == "":
             errors.append(f"Please enter {label}.")
 
+    if data["tree_size"] and data["tree_size"] not in PRICES:
+        errors.append("Please choose a tree size from the list.")
+
     if data["quantity"] is None or not 1 <= data["quantity"] <= 50:
         errors.append("Please enter a quantity between 1 and 50.")
 
@@ -58,12 +61,18 @@ def validate_order(data):
     return errors
 
 
-def order_total(data):
-    """Return the order total in cents, calculated from our own PRICES."""
+def order_total(data, premium=False):
+    """Return the order total in cents, calculated from our own PRICES.
+
+    The dozen discount (one order of 12+) and the Premium discount (lifetime loyalty)
+    are separate rewards, so both apply.
+    """
     per_tree = PRICES[data["tree_size"]]
     if data["flocked"]:
         per_tree += FLOCKING_PRICE
     total = per_tree * data["quantity"]
     if data["quantity"] >= 12:
         total = total * (1 - DOZEN_DISCOUNT)
+    if premium:
+        total = total * (1 - PREMIUM_DISCOUNT)
     return round(total * 100)

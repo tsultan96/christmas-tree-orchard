@@ -5,6 +5,10 @@
 
 <h1> Your Christmas Tree is 1 Order Away!!!</h1>
 
+{% if premium %}
+<article class="snow-card">⭐ <strong>Premium customer:</strong> 5% off this order, applied automatically.</article>
+{% endif %}
+
 {% if errors %}
 <article>
     <p><strong>Please fix the following:</strong></p>

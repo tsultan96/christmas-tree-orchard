@@ -15,6 +15,9 @@
             <p><strong>{{ order.quantity }} × {{ order.species }}</strong>, {{ order.tree_size }}{% if order.flocked %}, flocked{% endif %}</p>
             <p>Delivery: {{ order.delivery_date }}, {{ order.time_window }}</p>
             <p>{{ order.street }} {{ order.apt }}, {{ order.city }} {{ order.zip }}</p>
+            {% if order.total %}
+            <p><strong>Total: ${{ "%.2f" | format(order.total / 100) }}</strong>{% if order.premium %} (includes your ⭐ Premium 5% off){% endif %}</p>
+            {% endif %}
         </article>
     </div>
 </div>
