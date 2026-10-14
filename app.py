@@ -8,9 +8,12 @@ from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 from emails import send_alert, send_confirmation
-from orders import DOZEN_DISCOUNT, FLOCKING_PRICE, PRICES, validate_order
+from orders import (
+    DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES,
+    delivered_count, is_premium, validate_order,
+)
 from payments import create_checkout, paid_row
-from sheets import create_customer, find_customer, get_orders_for_month, save_order, set_delivered, set_paid
+from sheets import create_customer, find_customer, get_orders_for_customer, get_orders_for_month, save_order, set_delivered, set_paid
 
 
 load_dotenv()
@@ -83,6 +86,21 @@ def account_login():
             return redirect(url_for("index"))
         error = "Email or password is incorrect."
     return render_template("account_login.html", error=error, email=email)
+
+
+@app.route("/account")
+def my_orders():
+    if not session.get("customer"):
+        return redirect(url_for("account_login"))
+
+    orders = get_orders_for_customer(session["customer"])
+    return render_template(
+        "my_orders.html",
+        orders=orders,
+        delivered=delivered_count(orders),
+        premium=is_premium(orders),
+        premium_after=PREMIUM_AFTER,
+    )
 
 
 @app.route("/account/logout", methods=["POST"])

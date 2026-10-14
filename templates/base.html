@@ -20,6 +20,7 @@
                     {% if session.get("customer") %}
                         <li><a href="{{ url_for('order') }}" role="button">Order a tree</a></li>
                         <li class="hello">Hi, {{ session.get("customer_name") }}</li>
+                        <li><a href="{{ url_for('my_orders') }}">My orders</a></li>
                         <li>
                             <form method="post" action="{{ url_for('account_logout') }}">
                                 <button type="submit" class="secondary outline">Log out</button>

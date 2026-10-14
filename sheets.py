@@ -68,6 +68,14 @@ def get_orders_for_month(month):
     return result
 
 
+def get_orders_for_customer(email):
+    """Return every order filed under this email, newest delivery date first."""
+    orders = get_sheet().get_all_records(numericise_ignore=["all"])
+    result = [o for o in orders if o["Email"].strip().lower() == email]
+    result.sort(key=lambda o: o["Delivery date"], reverse=True)
+    return result
+
+
 def set_delivered(row, delivered):
     get_sheet().update_cell(row, DELIVERED_COLUMN, "Yes" if delivered else "No")
 

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My orders{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>My orders</h1>
+    <a href="{{ url_for('order') }}" role="button">Order a tree</a>
+</div>
+
+<article class="snow-card">
+    {% if premium %}
+        <h3>⭐ You're a Premium customer</h3>
+        <p>Thank you for {{ delivered }} delivered orders! Every new order is 5% off.</p>
+    {% else %}
+        <p><strong>{{ delivered }} of {{ premium_after }}</strong> delivered orders toward ⭐ Premium (5% off every order after that)</p>
+        <progress value="{{ delivered }}" max="{{ premium_after }}"></progress>
+    {% endif %}
+</article>
+
+{% if orders %}
+<div class="overflow-auto snow-card">
+<table>
+    <thead>
+        <tr><th>Delivery</th><th>Tree</th><th>Deliver to</th><th>Payment</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o["Delivery date"] }}<br><small>{{ o["Time window"] }}</small></td>
+            <td>{{ o["Quantity"] }} × {{ o["Species"] }}<br><small>{{ o["Size"] }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</small></td>
+            <td>{{ o["Street"] }} {{ o["Apt"] }}<br><small>{{ o["City"] }} {{ o["ZIP"] }}</small></td>
+            <td>
+                {% if o["Paid"] == "Yes" %}💳 Paid
+                {% elif o["Paid"] == "Cash" %}💵 Cash on delivery
+                {% elif o["Paid"] == "No" %}⏳ Not paid yet
+                {% else %}{{ o["Payment"] }}
+                {% endif %}
+            </td>
+            <td>{% if o["Delivered"] == "Yes" %}🚚 Delivered{% else %}📦 Scheduled{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>You haven't ordered yet. Your orders will show up here.</p>
+{% endif %}
+
+{% endblock %}
