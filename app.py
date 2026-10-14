@@ -201,6 +201,11 @@ def index():
     )
 
 
+@app.route("/member")
+def member():
+    return render_template("member.html")
+
+
 @app.route("/order", methods=["GET", "POST"])
 def order():
     if request.method == "POST":

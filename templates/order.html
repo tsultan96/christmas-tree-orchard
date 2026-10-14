@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Order a tree{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-{% endblock %}
-
 {% block content %}
 
 <h1> Your Christmas Tree is 1 Order Away!!!</h1>
@@ -20,7 +16,7 @@
 </article>
 {% endif %}
 
-<form method="post">
+<form method="post" class="snow-card">
 
     <h2>Your tree</h2>
 

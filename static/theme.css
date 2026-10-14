@@ -42,7 +42,90 @@ body::after {
         0 0;
 }
 
-h1 { color: #ffffff; }
+/* Christmas red buttons and links, green focus ring (Pico reads these variables) */
+body {
+    --pico-primary: #ff8a80;
+    --pico-primary-background: #c62828;
+    --pico-primary-border: #c62828;
+    --pico-primary-hover: #ffab91;
+    --pico-primary-hover-background: #a61d1d;
+    --pico-primary-hover-border: #a61d1d;
+    --pico-primary-focus: rgba(46, 160, 67, 0.5);
+    --pico-primary-inverse: #ffffff;
+}
+
+/* frosted card that sits ABOVE the falling snow, so forms and tables stay readable */
+.snow-card {
+    position: relative;
+    z-index: 20;
+    background: rgba(20, 35, 70, 0.88);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.snow-card table,
+.snow-card th,
+.snow-card td {
+    background: transparent;
+    color: #ffffff;
+}
+
+h1, h2, h3, label, legend { color: #ffffff; }
+
+/* page layout: sidebar on the left, content on the right */
+.layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* sidebar: frosted panel above the falling snow, stays in view while scrolling */
+.sidebar {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    z-index: 20;
+    background: rgba(20, 35, 70, 0.88);
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+.sidebar .brand {
+    display: block;
+    margin-bottom: 1rem;
+    color: #ffffff;
+    text-decoration: none;
+}
+.sidebar nav { display: block; }
+.sidebar nav ul {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+}
+.sidebar nav li { list-style: none; padding: 0; }
+.sidebar nav a { display: block; text-align: left; margin: 0; }
+.sidebar nav a[role="button"] { text-align: center; margin-bottom: 0.5rem; }
+.sidebar nav a:not([role="button"]) { color: #ffffff; }
+
+/* phones: sidebar moves to the top, links sit side by side */
+@media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+    .sidebar { position: relative; top: 0; }
+    .sidebar nav ul { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+}
+
+/* quiet footer with the staff link, above the snow */
+.site-footer {
+    position: relative;
+    z-index: 20;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+}
+.site-footer a { color: rgba(255, 255, 255, 0.85); }
 article { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
 .santa { width: 100%; border-radius: 12px; }
 

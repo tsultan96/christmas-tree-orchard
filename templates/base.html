@@ -6,14 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Christmas Tree Orchard{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     {% block head %}{% endblock %}
 
 </head>
 
 <body>
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="layout">
+        <aside class="sidebar">
+            <a href="{{ url_for('index') }}" class="brand"><strong>🎄 Christmas Tree Orchard</strong></a>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('order') }}" role="button">Order as guest</a></li>
+                    <li><a href="{{ url_for('member') }}">Sign up</a></li>
+                    <li><a href="{{ url_for('member') }}">Log in</a></li>
+                    {% if session.get("admin") %}
+                        <li><a href="{{ url_for('admin') }}">Deliveries</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="container site-footer">
+        <small>
+            Christmas Tree Orchard (demo project) ·
+            <a href="{{ url_for('login') }}">Staff login</a>
+        </small>
+    </footer>
 </body>
 
 </html>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Returning member{% endblock %}
+{% block content %}
+
+<article class="snow-card">
+    <h1>Member accounts are coming soon</h1>
+    <p>Soon you'll be able to log in to see your past orders and check out faster.</p>
+    <p>For now, you can still order in two minutes as a guest.</p>
+    <a href="{{ url_for('order') }}" role="button">Order as guest</a>
+</article>
+
+{% endblock %}
