@@ -13,7 +13,7 @@ Built as a two-week learning project to refresh my Python skills.
 - Order form with a tree picker of photo cards; validated in the browser and on the server, and keeps the customer's input after an error
 - Card payments: Stripe Checkout in test mode. Try card `4242 4242 4242 4242` with any future expiry date, any CVC, and any ZIP. No real money is charged.
 - Order as a guest, or sign up / log in. Logged-in customers get the order form pre-filled and a **My orders** page with delivery and payment status
-- Premium loyalty: after 10 delivered orders, every new order is 5% off (stacks with the 10% dozen discount)
+- Premium loyalty: once 10 trees have been delivered to a customer (counted across all their orders), every new order is 5% off (stacks with the 10% dozen discount)
 
 **Staff**
 - Separate staff login (linked from the footer) that leads to a monthly deliveries table: date, customer, address, tree, notes, payment status (Paid / Cash / Unpaid), and a Mark delivered / undo button
@@ -96,7 +96,7 @@ Note: email alerts work locally, but Render's free tier blocks outgoing email (S
 - State-changing actions (`/admin/delivered`, `/logout`, `/account/logout`) are POST-only, with redirect-after-POST.
 - Card payments go through Stripe Checkout, so card numbers never touch this app. The price is calculated on the server from `PRICES` (never taken from the form), and `/paid` confirms the payment with Stripe before marking the order paid.
 - Tree types and sizes are checked against the server's own lists, so a value edited in DevTools is rejected.
-- A member's order is always filed under their account email, and Premium is only checked for a logged-in customer against their own delivered orders, so nobody can claim someone else's discount by typing their email.
+- A member's order is always filed under their account email, and Premium is only checked for a logged-in customer against the trees in their own delivered orders, so nobody can claim someone else's discount by typing their email.
 
 
 ## What I learned

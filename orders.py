@@ -31,17 +31,24 @@ PRICES = {
 FLOCKING_PRICE = 25
 DOZEN_DISCOUNT = 0.10
 
-PREMIUM_AFTER = 10        # delivered orders needed to become Premium
+PREMIUM_AFTER = 10        # delivered TREES (lifetime, across all orders) needed to become Premium
 PREMIUM_DISCOUNT = 0.05   # off every order after that
 
 
-def delivered_count(orders):
-    """How many of these orders (rows from the sheet) were actually delivered."""
-    return sum(1 for o in orders if o["Delivered"] == "Yes")
+def delivered_trees(orders):
+    """Total number of trees in this customer's delivered orders (rows from the sheet)."""
+    total = 0
+    for o in orders:
+        if o["Delivered"] == "Yes":
+            try:
+                total += int(o["Quantity"])
+            except ValueError:
+                pass  # a hand-edited cell like "two" shouldn't break the page
+    return total
 
 
 def is_premium(orders):
-    return delivered_count(orders) >= PREMIUM_AFTER
+    return delivered_trees(orders) >= PREMIUM_AFTER
 
 
 def validate_order(data):

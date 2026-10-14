@@ -7,10 +7,10 @@
 <article class="snow-card">
     {% if premium %}
         <h3>⭐ You're a Premium customer</h3>
-        <p>Thank you for {{ delivered }} delivered orders! Every new order is 5% off.</p>
+        <p>Thank you for {{ delivered }} delivered trees! Every new order is 5% off.</p>
     {% else %}
-        <p><strong>{{ delivered }} of {{ premium_after }}</strong> delivered orders toward ⭐ Premium (5% off every order after that)</p>
-        <progress value="{{ delivered }}" max="{{ premium_after }}"></progress>
+        <p><strong>{{ delivered }} of {{ premium_after }}</strong> trees delivered toward ⭐ Premium (5% off every order after that)</p>
+        <progress value="{{ [delivered, premium_after] | min }}" max="{{ premium_after }}"></progress>
     {% endif %}
 </article>
 

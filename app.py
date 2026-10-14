@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash
 from emails import send_alert, send_confirmation
 from orders import (
     DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES, SPECIES,
-    delivered_count, is_premium, order_total, validate_order,
+    delivered_trees, is_premium, order_total, validate_order,
 )
 from payments import create_checkout, paid_row
 from sheets import create_customer, find_customer, get_orders_for_customer, get_orders_for_month, save_order, set_delivered, set_paid
@@ -108,7 +108,7 @@ def my_orders():
     return render_template(
         "my_orders.html",
         orders=orders,
-        delivered=delivered_count(orders),
+        delivered=delivered_trees(orders),
         premium=is_premium(orders),
         premium_after=PREMIUM_AFTER,
     )
@@ -122,7 +122,7 @@ def account_logout():
 
 
 def current_customer_is_premium():
-    """Premium only counts for a LOGGED-IN customer, checked against their own delivered orders."""
+    """Premium only counts for a LOGGED-IN customer, checked against the trees in their own delivered orders."""
     email = session.get("customer")
     return bool(email) and is_premium(get_orders_for_customer(email))
 
