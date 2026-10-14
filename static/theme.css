@@ -94,6 +94,61 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .month-picker input, .month-picker button { margin: 0; }
 .month-picker button { width: auto; }
 
+/* staff login: tree farm photo with a small login box in the middle */
+.login-hero {
+    position: relative;
+    z-index: 20;
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background-size: cover;
+    background-position: center;
+    padding: 1.5rem;
+}
+.login-box {
+    width: 100%;
+    max-width: 340px;          /* password-box size, not the whole page */
+    background: rgba(20, 35, 70, 0.88);
+    border-radius: 16px;
+    padding: 1.75rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.login-box h1 { font-size: 1.6rem; margin-bottom: 1rem; }
+.login-box label { text-align: left; }
+.login-box button { width: 100%; margin-bottom: 0; }
+.login-error { color: #ffab91; font-weight: bold; }
+
+/* top bar with the cart, top-right of the content area */
+.topbar {
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 20;
+}
+.cart-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ffffff;
+    text-decoration: none;
+    background: rgba(20, 35, 70, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+}
+.cart-count {
+    background: #c62828;
+    color: #ffffff;
+    border-radius: 999px;
+    min-width: 1.5rem;
+    padding: 0 0.4rem;
+    text-align: center;
+    font-weight: bold;
+}
+
 /* page layout: sidebar on the left, content on the right */
 /* full window width: sidebar hugs the left edge, content gets all the remaining space */
 .layout {

@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Admin login{% endblock %}
+{% block topbar %}{% endblock %}
 {% block content %}
-<h1>Admin login</h1>
-{% if error %}<p><strong>{{ error }}</strong></p>{% endif %}
-<form method="post" class="snow-card">
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" required autofocus>
-    <button type="submit">Log in</button>
-</form>
+
+<section class="login-hero" style="background-image: url('{{ url_for('static', filename='tree-farm.webp') }}');">
+    <form method="post" class="login-box">
+        <h1>Admin login</h1>
+        {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required autofocus>
+        <button type="submit">Log in</button>
+    </form>
+</section>
+
 {% endblock %}

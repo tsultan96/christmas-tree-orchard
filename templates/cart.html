@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Your cart{% endblock %}
+{% block content %}
+
+<h1>Your cart</h1>
+
+{% if items %}
+    {# filled in when add-to-cart is built #}
+{% else %}
+<article class="snow-card">
+    <p>Your cart is empty.</p>
+</article>
+{% endif %}
+
+{% endblock %}

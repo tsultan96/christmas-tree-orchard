@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Deliveries{% endblock %}
+{% block topbar %}{% endblock %}
 {% block content %}
 
 <div class="page-header">
@@ -36,7 +37,7 @@
             <td>
                 {% if o["Paid"] == "Yes" %}💳 Paid
                 {% elif o["Paid"] == "Cash" %}Cash
-                {% elif o["Paid"] == "No" %}⏳ Unpaid
+                {% elif o["Paid"] == "No" %}Unpaid
                 {% else %}{{ o["Payment"] }}
                 {% endif %}
             </td>
