@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash
 
 from emails import send_alert, send_confirmation
 from orders import (
-    DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES,
+    DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES, SPECIES,
     delivered_count, is_premium, order_total, validate_order,
 )
 from payments import create_checkout, paid_row
@@ -21,6 +21,12 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
+
+
+@app.context_processor
+def tree_info():
+    """Every template can use `species` (names, descriptions, pictures of the trees we sell)."""
+    return {"species": SPECIES}
 
 
 @app.route("/")

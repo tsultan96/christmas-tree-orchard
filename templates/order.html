@@ -24,14 +24,18 @@
 
     <h2>Your tree</h2>
 
-    <label for="species">Tree type</label>
-    <select id="species" name="species" required>
-        <option value="">Choose a tree</option>
-        <option value="fraser_fir" {% if form.species == "fraser_fir" %}selected{% endif %}>Fraser fir</option>
-        <option value="douglas_fir" {% if form.species == "douglas_fir" %}selected{% endif %}>Douglas fir</option>
-        <option value="white_pine" {% if form.species == "white_pine" %}selected{% endif %}>White pine</option>
-        <option value="norway_spruce" {% if form.species == "norway_spruce" %}selected{% endif %}>Norway spruce</option>
-    </select>
+    <fieldset class="tree-picker">
+        <legend>Pick your tree</legend>
+        {% for value, tree in species.items() %}
+        <label class="tree-card">
+            <input type="radio" name="species" value="{{ value }}"
+                   {% if form.species == value %}checked{% endif %} {% if loop.first %}required{% endif %}>
+            <img src="{{ url_for('static', filename=tree.image) }}" alt="{{ tree.name }}" loading="lazy">
+            <strong>{{ tree.name }}</strong>
+            <small>{{ tree.about }}</small>
+        </label>
+        {% endfor %}
+    </fieldset>
 
 
     <label for="tree_size">Tree Size</label>

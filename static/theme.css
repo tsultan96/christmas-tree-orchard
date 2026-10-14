@@ -121,6 +121,35 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .login-box button { width: 100%; margin-bottom: 0; }
 .login-error { color: #ffab91; font-weight: bold; }
 
+/* tree picker: picture cards that work like radio buttons */
+.tree-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    border: none;
+    padding: 0;
+}
+.tree-picker legend { margin-bottom: 0.75rem; font-weight: bold; }
+.tree-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.6rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+}
+.tree-card:hover { border-color: rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+.tree-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+.tree-card small { color: rgba(255, 255, 255, 0.75); }
+/* hide the round radio dot but keep it usable by keyboard and screen readers */
+.tree-card input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tree-card:has(input:checked) { border-color: #e53935; background: rgba(229, 57, 53, 0.15); }
+.tree-card:has(input:focus-visible) { outline: 3px solid rgba(46, 160, 67, 0.7); outline-offset: 2px; }
+@media (max-width: 900px) { .tree-picker { grid-template-columns: repeat(2, 1fr); } }
+
 /* top bar with the cart, top-right of the content area */
 .topbar {
     display: flex;
@@ -190,6 +219,25 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .sidebar nav a { display: block; text-align: left; margin: 0; }
 .sidebar nav a[role="button"] { text-align: center; margin-bottom: 0.5rem; }
 .sidebar .hello { color: #ffffff; padding: 0.5rem 0.75rem; }
+/* every sidebar box (links and the Log out button) the same height */
+.sidebar nav a[role="button"],
+.sidebar nav button {
+    padding: 0.5rem 0.75rem;
+    line-height: 1.5;
+    font-size: 1rem;
+}
+
+/* outlined sidebar boxes: white border and white text, light fill on hover */
+.sidebar .outline {
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: transparent;
+}
+.sidebar .outline:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
 .sidebar nav form { margin: 0; }
 .sidebar nav form button { width: 100%; margin: 0; }
 .sidebar nav a:not([role="button"]) { color: #ffffff; }
