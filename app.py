@@ -33,6 +33,11 @@ def index():
     )
 
 
+@app.route("/cart")
+def cart():
+    return render_template("cart.html", items=session.get("cart", []))
+
+
 @app.route("/member")
 def member():
     return render_template("member.html")
@@ -191,6 +196,9 @@ def login():
     if request.method == "POST":
         typed = request.form.get("password", "")
         if secrets.compare_digest(typed, os.getenv("ADMIN_PASSWORD")):
+            # staff and customer logins never mix in one browser
+            session.pop("customer", None)
+            session.pop("customer_name", None)
             session["admin"] = True
             return redirect(url_for("admin"))
         error = "Wrong password."
