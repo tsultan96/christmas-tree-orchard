@@ -1,15 +1,16 @@
 import os
 import secrets
-from datetime import date
+from datetime import date, datetime
 
 import stripe
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash
 
 from emails import send_alert, send_confirmation
 from orders import DOZEN_DISCOUNT, FLOCKING_PRICE, PRICES, validate_order
 from payments import create_checkout, paid_row
-from sheets import create_customer, find_customer, get_orders_for, save_order, set_delivered, set_paid
+from sheets import create_customer, find_customer, get_orders_for_month, save_order, set_delivered, set_paid
 
 
 load_dotenv()
@@ -61,8 +62,34 @@ def signup():
         if not errors:
             create_customer(form["email"], form["name"], form["phone"], password)
             session["customer"] = form["email"]
+            session["customer_name"] = form["name"]
             return redirect(url_for("index"))
     return render_template("signup.html", errors=errors, form=form)
+
+
+@app.route("/account/login", methods=["GET", "POST"])
+def account_login():
+    error = None
+    email = ""
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        customer = find_customer(email)
+        # same message whether the email is unknown or the password is wrong,
+        # so nobody can use this page to find out who has an account
+        if customer and check_password_hash(customer["Password hash"], password):
+            session["customer"] = customer["Email"]
+            session["customer_name"] = customer["Name"]
+            return redirect(url_for("index"))
+        error = "Email or password is incorrect."
+    return render_template("account_login.html", error=error, email=email)
+
+
+@app.route("/account/logout", methods=["POST"])
+def account_logout():
+    session.pop("customer", None)
+    session.pop("customer_name", None)
+    return redirect(url_for("index"))
 
 
 @app.route("/order", methods=["GET", "POST"])
@@ -122,6 +149,8 @@ def paid():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("admin"):
+        return redirect(url_for("admin"))  # already logged in: go straight to deliveries
     error = None
     if request.method == "POST":
         typed = request.form.get("password", "")
@@ -143,9 +172,21 @@ def admin():
     if not session.get("admin"):
         return redirect(url_for("login"))
 
-    day = request.args.get("date", date.today().isoformat())
-    orders = get_orders_for(day)
-    return render_template("admin.html", orders=orders, day=day)
+    month = request.args.get("month", date.today().strftime("%Y-%m"))
+    try:
+        month_label = datetime.strptime(month, "%Y-%m").strftime("%B %Y")  # "December 2026"
+    except ValueError:
+        return redirect(url_for("admin"))  # bad month in the URL: show this month instead
+
+    orders = get_orders_for_month(month)
+    delivered = sum(1 for o in orders if o["Delivered"] == "Yes")
+    return render_template(
+        "admin.html",
+        orders=orders,
+        month=month,
+        month_label=month_label,
+        delivered=delivered,
+    )
 
 
 @app.route("/admin/delivered", methods=["POST"])
@@ -155,7 +196,7 @@ def mark_delivered():
 
     row = int(request.form["row"])
     set_delivered(row, request.form["delivered"] == "Yes")
-    return redirect(url_for("admin", date=request.form["date"]))
+    return redirect(url_for("admin", month=request.form["month"]))
 
 
 if __name__ == "__main__":

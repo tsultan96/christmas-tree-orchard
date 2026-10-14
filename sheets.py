@@ -53,13 +53,18 @@ def save_order(data):
     return int(updated_range.split("!")[1].split(":")[0][1:])
 
 
-def get_orders_for(day):
+TIME_ORDER = {"morning": 0, "afternoon": 1, "evening": 2}
+
+
+def get_orders_for_month(month):
+    """Return all orders delivering in this month ("2026-12"), sorted by date and time window."""
     orders = get_sheet().get_all_records(numericise_ignore=["all"])
     result = []
     for row_number, order in enumerate(orders, start=2):
-        if order["Delivery date"] == day:
+        if order["Delivery date"].startswith(month + "-"):
             order["row"] = row_number
             result.append(order)
+    result.sort(key=lambda o: (o["Delivery date"], TIME_ORDER.get(o["Time window"], 9)))
     return result
 
 

@@ -17,11 +17,18 @@
             <a href="{{ url_for('index') }}" class="brand"><strong>Christmas Tree Orchard</strong></a>
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('order') }}" role="button">Order as guest</a></li>
-                    <li><a href="{{ url_for('signup') }}">Sign up</a></li>
-                    <li><a href="{{ url_for('member') }}">Log in</a></li>
-                    {% if session.get("admin") %}
-                        <li><a href="{{ url_for('admin') }}">Deliveries</a></li>
+                    {% if session.get("customer") %}
+                        <li><a href="{{ url_for('order') }}" role="button">Order a tree</a></li>
+                        <li class="hello">Hi, {{ session.get("customer_name") }}</li>
+                        <li>
+                            <form method="post" action="{{ url_for('account_logout') }}">
+                                <button type="submit" class="secondary outline">Log out</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('order') }}" role="button">Order as guest</a></li>
+                        <li><a href="{{ url_for('signup') }}">Sign up</a></li>
+                        <li><a href="{{ url_for('account_login') }}">Log in</a></li>
                     {% endif %}
                 </ul>
             </nav>

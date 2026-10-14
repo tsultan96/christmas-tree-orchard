@@ -2,30 +2,33 @@
 {% block title %}Deliveries{% endblock %}
 {% block content %}
 
-<h1>Deliveries for {{ day }}</h1>
+<div class="page-header">
+    <h1>Deliveries for {{ month_label }}</h1>
+    <form method="post" action="{{ url_for('logout') }}">
+        <button type="submit" class="secondary outline">Log out</button>
+    </form>
+</div>
 
-<form method="post" action="{{ url_for('logout') }}">
-    <button type="submit" class="secondary outline">Log out</button>
-</form>
-
-
-<form method="get">
-    <input type="date" name="date" value="{{ day }}">
+<form method="get" class="month-picker">
+    <input type="month" name="month" value="{{ month }}" aria-label="Month">
     <button type="submit">Show</button>
 </form>
 
 {% if orders %}
+<p>{{ orders | length }} orders this month · {{ delivered }} delivered · {{ orders | length - delivered }} to go</p>
+
 <div class="overflow-auto snow-card">
 <table>
     <thead>
         <tr>
-            <th>Time</th><th>Name</th><th>Phone</th><th>Address</th>
+            <th>Date</th><th>Time</th><th>Name</th><th>Phone</th><th>Address</th>
             <th>Tree</th><th>Notes</th><th>Payment</th><th>Paid</th><th>Delivered</th>
         </tr>
     </thead>
     <tbody>
         {% for o in orders %}
         <tr>
+            <td>{{ o["Delivery date"] }}</td>
             <td>{{ o["Time window"] }}</td>
             <td>{{ o["Name"] }}</td>
             <td>{{ o["Phone"] }}</td>
@@ -43,7 +46,7 @@
             <td>
                 <form method="post" action="{{ url_for('mark_delivered') }}">
                     <input type="hidden" name="row" value="{{ o.row }}">
-                    <input type="hidden" name="date" value="{{ day }}">
+                    <input type="hidden" name="month" value="{{ month }}">
                     {% if o["Delivered"] == "Yes" %}
                         <input type="hidden" name="delivered" value="No">
                         <button type="submit" class="secondary">✓ Delivered (undo)</button>
@@ -59,7 +62,7 @@
 </table>
 </div>
 {% else %}
-<p>No deliveries for this day.</p>
+<p>No deliveries in {{ month_label }}.</p>
 {% endif %}
 
 {% endblock %}

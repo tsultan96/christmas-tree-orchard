@@ -71,6 +71,24 @@ body {
 
 h1, h2, h3, label, legend { color: #ffffff; }
 
+/* heading on the left, action button on the right, same line (wraps on narrow screens) */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.page-header h1 { margin: 0; }
+.page-header form { margin: 0; }
+.page-header form button { width: auto; margin: 0; }
+
+/* month picker and its button side by side */
+.month-picker { display: flex; gap: 0.75rem; max-width: 420px; }
+.month-picker input, .month-picker button { margin: 0; }
+.month-picker button { width: auto; }
+
 /* page layout: sidebar on the left, content on the right */
 .layout {
     display: grid;
@@ -111,6 +129,9 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .sidebar nav li { list-style: none; padding: 0; }
 .sidebar nav a { display: block; text-align: left; margin: 0; }
 .sidebar nav a[role="button"] { text-align: center; margin-bottom: 0.5rem; }
+.sidebar .hello { color: #ffffff; padding: 0.5rem 0.75rem; }
+.sidebar nav form { margin: 0; }
+.sidebar nav form button { width: 100%; margin: 0; }
 .sidebar nav a:not([role="button"]) { color: #ffffff; }
 
 /* Santa picture at the bottom of the sidebar */
