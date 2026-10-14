@@ -68,6 +68,11 @@ body {
     background: transparent;
     color: #ffffff;
 }
+/* compact admin table: smaller text and padding, dates stay on one line */
+.snow-card table { font-size: 0.9rem; }
+.snow-card th, .snow-card td { padding: 0.5rem 0.6rem; }
+.snow-card td:first-child { white-space: nowrap; }
+.snow-card td button { padding: 0.35rem 0.6rem; font-size: 0.85rem; margin: 0; }
 
 h1, h2, h3, label, legend { color: #ffffff; }
 
@@ -90,14 +95,14 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .month-picker button { width: auto; }
 
 /* page layout: sidebar on the left, content on the right */
+/* full window width: sidebar hugs the left edge, content gets all the remaining space */
 .layout {
     display: grid;
     grid-template-columns: 290px 1fr;
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1.5rem;
+    gap: 1.5rem;
+    padding: 1rem;
 }
+.layout > main { min-width: 0; }  /* lets wide tables scroll inside their card instead of stretching the page */
 
 /* sidebar: frosted panel above the falling snow, stays in view while scrolling */
 .sidebar {

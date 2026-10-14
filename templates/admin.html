@@ -21,26 +21,23 @@
 <table>
     <thead>
         <tr>
-            <th>Date</th><th>Time</th><th>Name</th><th>Phone</th><th>Address</th>
-            <th>Tree</th><th>Notes</th><th>Payment</th><th>Paid</th><th>Delivered</th>
+            <th>When</th><th>Customer</th><th>Address</th>
+            <th>Tree</th><th>Notes</th><th>Payment</th><th>Delivered</th>
         </tr>
     </thead>
     <tbody>
         {% for o in orders %}
         <tr>
-            <td>{{ o["Delivery date"] }}</td>
-            <td>{{ o["Time window"] }}</td>
-            <td>{{ o["Name"] }}</td>
-            <td>{{ o["Phone"] }}</td>
-            <td>{{ o["Street"] }} {{ o["Apt"] }}, {{ o["City"] }} {{ o["ZIP"] }}</td>
-            <td>{{ o["Quantity"] }} × {{ o["Species"] }}, {{ o["Size"] }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</td>
+            <td>{{ o["Delivery date"] }}<br><small>{{ o["Time window"] }}</small></td>
+            <td>{{ o["Name"] }}<br><small>{{ o["Phone"] }}</small></td>
+            <td>{{ o["Street"] }} {{ o["Apt"] }}<br><small>{{ o["City"] }} {{ o["ZIP"] }}</small></td>
+            <td>{{ o["Quantity"] }} × {{ o["Species"] }}<br><small>{{ o["Size"] }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</small></td>
             <td>{{ o["Notes"] }}</td>
-            <td>{{ o["Payment"] }}</td>
             <td>
                 {% if o["Paid"] == "Yes" %}💳 Paid
                 {% elif o["Paid"] == "Cash" %}💵 Cash
                 {% elif o["Paid"] == "No" %}⏳ Unpaid
-                {% else %}–
+                {% else %}{{ o["Payment"] }}
                 {% endif %}
             </td>
             <td>
