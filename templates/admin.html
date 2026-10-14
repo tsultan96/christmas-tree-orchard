@@ -35,7 +35,7 @@
             <td>{{ o["Notes"] }}</td>
             <td>
                 {% if o["Paid"] == "Yes" %}💳 Paid
-                {% elif o["Paid"] == "Cash" %}💵 Cash
+                {% elif o["Paid"] == "Cash" %}Cash
                 {% elif o["Paid"] == "No" %}⏳ Unpaid
                 {% else %}{{ o["Payment"] }}
                 {% endif %}

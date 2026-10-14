@@ -31,7 +31,7 @@
             <td>{{ o["Street"] }} {{ o["Apt"] }}<br><small>{{ o["City"] }} {{ o["ZIP"] }}</small></td>
             <td>
                 {% if o["Paid"] == "Yes" %}💳 Paid
-                {% elif o["Paid"] == "Cash" %}💵 Cash on delivery
+                {% elif o["Paid"] == "Cash" %}Cash on delivery
                 {% elif o["Paid"] == "No" %}⏳ Not paid yet
                 {% else %}{{ o["Payment"] }}
                 {% endif %}
