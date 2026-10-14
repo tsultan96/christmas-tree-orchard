@@ -1,0 +1,57 @@
+"""Business rules for tree orders: what's required, what things cost."""
+
+from datetime import date
+
+
+REQUIRED_FIELDS = {
+    "species": "a tree type",
+    "tree_size": "a tree size",
+    "name": "your name",
+    "phone": "your phone number",
+    "street": "your street address",
+    "city": "your city",
+    "delivery_date": "a delivery date",
+    "time_window": "a delivery time",
+    "payment": "a payment method",
+}
+
+PRICES = {
+    "3ft": 100,
+    "5ft": 150,
+    "8ft": 200,
+    "12ft": 250,
+}
+FLOCKING_PRICE = 25
+DOZEN_DISCOUNT = 0.10
+
+
+def validate_order(data):
+    errors = []
+
+    for field, label in REQUIRED_FIELDS.items():
+        if data[field] == "":
+            errors.append(f"Please enter {label}.")
+
+    if data["quantity"] is None or not 1 <= data["quantity"] <= 50:
+        errors.append("Please enter a quantity between 1 and 50.")
+
+    if data["delivery_date"]:
+        try:
+            chosen_date = date.fromisoformat(data["delivery_date"])
+        except ValueError:
+            errors.append("Please enter a valid delivery date.")
+        else:
+            if chosen_date < date.today():
+                errors.append("The delivery date can't be in the past.")
+    return errors
+
+
+def order_total(data):
+    """Return the order total in cents, calculated from our own PRICES."""
+    per_tree = PRICES[data["tree_size"]]
+    if data["flocked"]:
+        per_tree += FLOCKING_PRICE
+    total = per_tree * data["quantity"]
+    if data["quantity"] >= 12:
+        total = total * (1 - DOZEN_DISCOUNT)
+    return round(total * 100)
