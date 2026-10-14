@@ -2,24 +2,45 @@
 
 **Live demo:** https://christmas-tree-orchard.onrender.com (free hosting, so the first load can take about a minute to wake up)
 
-A small Flask web app where customers browse Christmas trees and place a delivery order online, with no phone calls. Orders are saved to a Google Sheet, the business gets an email alert, customers can pay by card through Stripe, and a password-protected admin page shows each day's deliveries with a "delivered" toggle.
+A small Flask web app where customers browse Christmas trees and place a delivery order online, with no phone calls. Orders are saved to a Google Sheet, the business gets an email alert, customers can pay by card through Stripe, and returning customers can create an account to see their orders and earn a Premium discount. A password-protected staff page lists each month's deliveries with payment status and a "delivered" toggle.
 
 Built as a two-week learning project to refresh my Python skills.
 
 ## Features
 
-- Landing page: tree types, sizes, and prices (prices are placeholders)
-- Order form: validated in the browser and on the server; keeps the customer's input after an error
+**Customers**
+- Landing page: tree types, sizes, and prices (prices are placeholders), all rendered from one `PRICES` table
+- Order form with a tree picker of photo cards; validated in the browser and on the server, and keeps the customer's input after an error
 - Card payments: Stripe Checkout in test mode. Try card `4242 4242 4242 4242` with any future expiry date, any CVC, and any ZIP. No real money is charged.
-- Google Sheets storage: each valid order is appended as a row via a service account
-- Email alerts: the business gets every new order; customers get a confirmation if they left an email
-- Admin view: deliveries for any date, mark orders delivered/undelivered, login/logout with a session
+- Order as a guest, or sign up / log in. Logged-in customers get the order form pre-filled and a **My orders** page with delivery and payment status
+- Premium loyalty: after 10 delivered orders, every new order is 5% off (stacks with the 10% dozen discount)
+
+**Staff**
+- Separate staff login (linked from the footer) that leads to a monthly deliveries table: date, customer, address, tree, notes, payment status (Paid / Cash / Unpaid), and a Mark delivered / undo button
+- Email alert for every new order
+
+**Behind the scenes**
+- Google Sheets as the database: an orders tab and a Customers tab, accessed through a service account
+- A Paid column that Stripe confirmation flips to "Yes", so abandoned card checkouts are easy to spot
 
 ## Tech
 
-Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · Stripe Checkout · smtplib (Gmail) · python-dotenv · gunicorn on Render
+Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · Stripe Checkout · Werkzeug password hashing · smtplib (Gmail) · python-dotenv · gunicorn on Render
 
-Server-rendered HTML.
+Server-rendered HTML, no JavaScript framework.
+
+## Project structure
+
+| File | Responsibility |
+|---|---|
+| `app.py` | Flask app setup and all routes |
+| `orders.py` | Business rules: `SPECIES`, `PRICES`, discounts, `validate_order`, `order_total`, Premium status |
+| `sheets.py` | Reading and writing the Google Sheet (orders and customers) |
+| `payments.py` | Stripe Checkout: create a checkout, confirm a payment |
+| `emails.py` | Order alert and confirmation emails |
+| `templates/`, `static/` | Jinja pages, the shared `theme.css`, and images |
+
+Imports only point toward `app.py`, so there are no circular imports.
 
 ## How it works
 
@@ -46,6 +67,9 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
    ```
 2. Google Sheets: create a Google Cloud project, enable the Sheets API, create a service account,
    download its JSON key as `credentials.json`, and share your sheet with the service account's email.
+   The spreadsheet needs two tabs with these header rows:
+   - first tab (orders): `Timestamp, Name, Phone, Email, Species, Size, Quantity, Flocked, Street, Apt, City, ZIP, Delivery date, Time window, Notes, Payment, Delivered, Paid`
+   - `Customers`: `Email, Name, Phone, Password hash, Created`
 3. Gmail: create an App Password for the sending account.
 4. Stripe: create an account, switch to the sandbox (test mode), and copy the secret key (`sk_test_...`).
 5. Create a `.env` file in the project root:
@@ -66,10 +90,13 @@ Note: email alerts work locally, but Render's free tier blocks outgoing email (S
 ## Security notes
 
 - Secrets live only in `.env` and `credentials.json`, both in `.gitignore`, and never in the code or Git history.
-- Every admin route checks the session, not just the admin page.
-- The password check uses `secrets.compare_digest` (constant time).
-- State-changing actions (`/admin/delivered`, `/logout`) are POST-only, with redirect-after-POST.
-- Card payments go through Stripe Checkout, so card numbers never touch this app. The price is calculated on the server from `PRICES` (never taken from the form), and `/paid` confirms the payment with Stripe before showing the thank-you page.
+- Customer passwords are stored only as salted hashes (Werkzeug `generate_password_hash`); the login page gives the same message for an unknown email and a wrong password, so it can't be used to find out who has an account.
+- Staff and customer logins use separate session keys, and a staff login ends any customer login in that browser.
+- Every staff route checks the session, not just the deliveries page. The staff password check uses `secrets.compare_digest` (constant time).
+- State-changing actions (`/admin/delivered`, `/logout`, `/account/logout`) are POST-only, with redirect-after-POST.
+- Card payments go through Stripe Checkout, so card numbers never touch this app. The price is calculated on the server from `PRICES` (never taken from the form), and `/paid` confirms the payment with Stripe before marking the order paid.
+- Tree types and sizes are checked against the server's own lists, so a value edited in DevTools is rejected.
+- A member's order is always filed under their account email, and Premium is only checked for a logged-in customer against their own delivered orders, so nobody can claim someone else's discount by typing their email.
 
 
 ## What I learned
@@ -91,8 +118,7 @@ I wrote most of the code myself, with Claude as a coach: it explained new concep
 
 ## Next steps
 
-- Paid column in the sheet, so unpaid card orders are easy to spot
-- Customer accounts (sign up / log in, order history)
-- Automated tests (pytest) for `validate_order` and `order_total`
+- A real cart, so one checkout can include several kinds of trees
+- Automated tests (pytest) for `validate_order`, `order_total`, and the Premium rules
+- Send emails through an HTTPS email API so alerts also work on the free hosting tier
 - Spanish/English switch
-- Split `app.py` into modules (`sheets.py`, admin Blueprint)
