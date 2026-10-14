@@ -74,7 +74,7 @@ h1, h2, h3, label, legend { color: #ffffff; }
 /* page layout: sidebar on the left, content on the right */
 .layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 290px 1fr;
     gap: 2rem;
     max-width: 1400px;
     margin: 0 auto;
@@ -93,6 +93,8 @@ h1, h2, h3, label, legend { color: #ffffff; }
 }
 .sidebar .brand {
     display: block;
+    white-space: nowrap;  /* keep the name on one line */
+    font-size: 1.05rem;
     margin-bottom: 1rem;
     color: #ffffff;
     text-decoration: none;
@@ -111,10 +113,19 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .sidebar nav a[role="button"] { text-align: center; margin-bottom: 0.5rem; }
 .sidebar nav a:not([role="button"]) { color: #ffffff; }
 
+/* Santa picture at the bottom of the sidebar */
+.sidebar-santa {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 12px;
+}
+
 /* phones: sidebar moves to the top, links sit side by side */
 @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
     .sidebar { position: relative; top: 0; }
+    .sidebar-santa { display: none; }  /* keep the page content near the top on small screens */
     .sidebar nav ul { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
 }
 

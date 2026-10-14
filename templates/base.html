@@ -14,7 +14,7 @@
 <body>
     <div class="layout">
         <aside class="sidebar">
-            <a href="{{ url_for('index') }}" class="brand"><strong>🎄 Christmas Tree Orchard</strong></a>
+            <a href="{{ url_for('index') }}" class="brand"><strong>Christmas Tree Orchard</strong></a>
             <nav>
                 <ul>
                     <li><a href="{{ url_for('order') }}" role="button">Order as guest</a></li>
@@ -25,6 +25,8 @@
                     {% endif %}
                 </ul>
             </nav>
+            <img class="sidebar-santa" src="{{ url_for('static', filename='santa-tree.webp') }}"
+                 alt="Santa in his sleigh next to a little Christmas tree">
         </aside>
 
         <main>
