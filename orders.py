@@ -15,6 +15,13 @@ REQUIRED_FIELDS = {
     "payment": "a payment method",
 }
 
+SPECIES = {
+    "fraser_fir": {"name": "Fraser fir", "about": "Soft needles, great needle retention", "image": "trees/fraser-fir.webp"},
+    "douglas_fir": {"name": "Douglas fir", "about": "Full shape and a sweet scent", "image": "trees/douglas-fir.webp"},
+    "white_pine": {"name": "White pine", "about": "Long, soft needles and a light look", "image": "trees/white-pine.webp"},
+    "norway_spruce": {"name": "Norway spruce", "about": "Classic shape with sturdy branches", "image": "trees/norway-spruce.webp"},
+}
+
 PRICES = {
     "3ft": 100,
     "5ft": 150,
@@ -43,6 +50,9 @@ def validate_order(data):
     for field, label in REQUIRED_FIELDS.items():
         if data[field] == "":
             errors.append(f"Please enter {label}.")
+
+    if data["species"] and data["species"] not in SPECIES:
+        errors.append("Please choose a tree from the list.")
 
     if data["tree_size"] and data["tree_size"] not in PRICES:
         errors.append("Please choose a tree size from the list.")

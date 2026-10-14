@@ -3,3 +3,4 @@ __pycache__/
 .env
 credentials*.json
 .vscode/
+static/trees/*.jpg
