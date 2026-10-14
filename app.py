@@ -111,6 +111,10 @@ def order():
             "delivery_notes": request.form.get("delivery_notes", "").strip(),
             "payment": request.form.get("payment", "").strip(),
         }
+        if session.get("customer"):
+            # always file a member's order under their account email, whatever was typed,
+            # so it shows up in My orders and counts toward Premium
+            order_data["email"] = session["customer"]
 
         try:
             order_data["quantity"] = int(request.form.get("quantity", ""))
@@ -132,7 +136,12 @@ def order():
             session["last_order"] = order_data
             return redirect(create_checkout(order_data, row))
         return render_template("thanks.html", order=order_data)
-    return render_template("order.html", form={}, today=date.today().isoformat())
+    form = {}
+    if session.get("customer"):
+        customer = find_customer(session["customer"])
+        if customer:
+            form = {"name": customer["Name"], "email": customer["Email"], "phone": customer["Phone"]}
+    return render_template("order.html", form=form, today=date.today().isoformat())
 
 
 @app.route("/paid")

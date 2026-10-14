@@ -55,7 +55,12 @@
     <input type="text" id="name" name="name" value="{{ form.name }}" required>
 
     <label for="email">Email</label>
+    {% if session.get("customer") %}
+    <input type="email" id="email" name="email" value="{{ session.get('customer') }}" readonly>
+    <small>Orders are saved to your account email.</small>
+    {% else %}
     <input type="email" id="email" name="email" value="{{ form.email }}">
+    {% endif %}
 
     <label for="phone">Phone</label>
     <input type="tel" id="phone" name="phone" value="{{ form.phone}}" required>
