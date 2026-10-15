@@ -1,5 +1,7 @@
 # Christmas Tree Orchard: direct-order web app
 
+[![Tests](https://github.com/tsultan96/christmas-tree-orchard/actions/workflows/tests.yml/badge.svg)](https://github.com/tsultan96/christmas-tree-orchard/actions/workflows/tests.yml)
+
 **Live demo:** https://christmas-tree-orchard.onrender.com (free hosting, so the first load can take about a minute to wake up)
 
 A small Flask web app where customers browse Christmas trees and place a delivery order online, with no phone calls. Orders are saved to a Google Sheet, the business gets an email alert, customers can pay by card through Stripe, and returning customers can create an account to see their orders and earn a Premium discount. A password-protected staff page lists each month's deliveries with payment status and a "delivered" toggle.
@@ -25,7 +27,7 @@ Built as a two-week learning project to refresh my Python skills.
 
 ## Tech
 
-Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · Stripe Checkout · Werkzeug password hashing · smtplib (Gmail) · python-dotenv · gunicorn on Render
+Python 3.13 · Flask 3.1 · Jinja templates · Pico.css · gspread (Google Sheets API) · Stripe Checkout · Werkzeug password hashing · smtplib (Gmail) · python-dotenv · gunicorn on Render · pytest · GitHub Actions (CI)
 
 Server-rendered HTML, no JavaScript framework.
 
@@ -83,9 +85,13 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
    ADMIN_PASSWORD=
    STRIPE_SECRET_KEY=
    ```
-6. Run `python app.py` and open http://127.0.0.1:5000
+6. Run `python app.py` and open http://127.0.0.1:5000 
+
+7. Run the tests: `pip install -r requirements-dev.txt`, then `python -m pytest`
 
 Note: email alerts work locally, but Render's free tier blocks outgoing email (SMTP), so the live demo saves orders without sending emails.
+
+
 
 ## Security notes
 
@@ -119,6 +125,5 @@ I wrote most of the code myself, with Claude as a coach: it explained new concep
 ## Next steps
 
 - A real cart, so one checkout can include several kinds of trees
-- Automated tests (pytest) for `validate_order`, `order_total`, and the Premium rules
 - Send emails through an HTTPS email API so alerts also work on the free hosting tier
 - Spanish/English switch
