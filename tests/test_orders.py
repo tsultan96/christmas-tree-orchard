@@ -1,4 +1,4 @@
-from orders import order_total
+from orders import order_total, size_label, tree_name
 import pytest
 
 
@@ -49,3 +49,9 @@ def test_zero_quantity_is_rejected():
     errors = validate_order(valid_order(quantity=0))
     assert any ("quantity" in e for e in errors)
     
+
+
+def test_tree_name_and_size_label():
+    assert tree_name("douglas_fir") == "Douglas fir"
+    assert tree_name("something_new") == "something_new"   # unknown values pass through
+    assert size_label("12ft") == "12 ft"

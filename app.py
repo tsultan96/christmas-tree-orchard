@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash
 from emails import send_alert, send_confirmation
 from orders import (
     DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES, SPECIES,
-    delivered_trees, is_premium, order_total, validate_order,
+    delivered_trees, is_premium, order_total, size_label, tree_name, validate_order,
 )
 from payments import create_checkout, paid_row
 from sheets import create_customer, find_customer, get_orders_for_customer, get_orders_for_month, save_order, set_delivered, set_paid
@@ -21,6 +21,10 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
+
+
+app.add_template_filter(tree_name)
+app.add_template_filter(size_label)
 
 
 @app.context_processor

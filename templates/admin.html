@@ -32,7 +32,7 @@
             <td>{{ o["Delivery date"] }}<br><small>{{ o["Time window"] }}</small></td>
             <td>{{ o["Name"] }}<br><small>{{ o["Phone"] }}</small></td>
             <td>{{ o["Street"] }} {{ o["Apt"] }}<br><small>{{ o["City"] }} {{ o["ZIP"] }}</small></td>
-            <td>{{ o["Quantity"] }} × {{ o["Species"] }}<br><small>{{ o["Size"] }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</small></td>
+            <td>{{ o["Quantity"] }} × {{ o["Species"] | tree_name }}<br><small>{{ o["Size"] | size_label }}{% if o["Flocked"] == "Yes" %}, flocked{% endif %}</small></td>
             <td>{{ o["Notes"] }}</td>
             <td>
                 {% if o["Paid"] == "Yes" %}💳 Paid

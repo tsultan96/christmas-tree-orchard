@@ -31,6 +31,17 @@ PRICES = {
 FLOCKING_PRICE = 25
 DOZEN_DISCOUNT = 0.10
 
+
+def tree_name(value):
+    """'douglas_fir' -> 'Douglas fir'. Unknown values are shown as they are."""
+    return SPECIES.get(value, {}).get("name", value)
+
+
+def size_label(value):
+    """'5ft' -> '5 ft'."""
+    return value[:-2] + " ft" if value.endswith("ft") else value
+
+
 PREMIUM_AFTER = 10        # delivered TREES (lifetime, across all orders) needed to become Premium
 PREMIUM_DISCOUNT = 0.05   # off every order after that
 

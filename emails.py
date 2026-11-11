@@ -4,6 +4,8 @@ import os
 import smtplib
 from email.message import EmailMessage
 
+from orders import size_label, tree_name
+
 
 def _send(msg):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as smtp:
@@ -19,7 +21,7 @@ def send_alert(data):
     msg.set_content(
         f"Name: {data['name']}\n"
         f"Phone: {data['phone']}\n"
-        f"Tree: {data['quantity']} x {data['species']}, {data['tree_size']}"
+        f"Tree: {data['quantity']} x {tree_name(data['species'])}, {size_label(data['tree_size'])}"
         f"{' (flocked)' if data['flocked'] else ''}\n"
         f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n"
         f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
@@ -37,7 +39,7 @@ def send_confirmation(data):
     msg.set_content(
         f"Hi {data['name']},\n\n"
         f"Thanks for your order! Here are the details:\n\n"
-        f"Tree: {data['quantity']} x {data['species']}, {data['tree_size']}"
+        f"Tree: {data['quantity']} x {tree_name(data['species'])}, {size_label(data['tree_size'])}"
         f"{' (flocked)' if data['flocked'] else ''}\n"
         f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
         f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n\n"

@@ -3,7 +3,7 @@
 import stripe
 from flask import url_for
 
-from orders import order_total
+from orders import order_total, size_label, tree_name
 
 
 def create_checkout(data, row, premium=False):
@@ -16,7 +16,7 @@ def create_checkout(data, row, premium=False):
                 "currency": "usd",
                 "unit_amount": order_total(data, premium),
                 "product_data": {
-                    "name": f"{data['quantity']} x {data['species']}, {data['tree_size']}"
+                    "name": f"{data['quantity']} x {tree_name(data['species'])}, {size_label(data['tree_size'])}"
                             + (" (Premium 5% off)" if premium else ""),
                 },
             },
