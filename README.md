@@ -116,11 +116,11 @@ Note: email alerts work locally, but Render's free tier blocks outgoing email (S
 
 ## How I built it
 
-I built the project in small pieces, getting each one working before starting the next: first the tree order form, then receiving each submitted order and collecting its fields into a Python dictionary, then validating it on the server. After that I connected a Google Sheet through a service account to store orders, added email alerts, and finished with a password-protected admin page and the landing page.
+I built the project in small pieces, getting each one working before starting the next: first the tree order form, then receiving each submitted order and collecting its fields into a Python dictionary, then validating it on the server. After that I connected a Google Sheet through a service account to store orders, added email alerts, and finished with a password-protected admin page and the landing page. Later I added Stripe card payments, customer accounts, a Premium loyalty discount, a monthly deliveries view for staff, a tree picker with photos, and automated tests with CI.
 
 I tested every piece as I went, in the browser and directly in the Python shell (for example, calling `validate_order()` with bad data the browser would normally block), and committed after each working step.
 
-I wrote most of the code myself, with Claude as a coach: it explained new concepts, reviewed each piece, and helped me debug. When I got stuck, it sometimes made a fix directly, which I then read through to understand. The Google Cloud and service-account setup would have taken me days to figure out alone; with coaching it took an afternoon.
+I wrote the first part of the project myself (the order form, server-side validation, Google Sheets storage, email alerts, and the staff page), with Claude as a coach: it explained new concepts, reviewed each piece, and helped me debug. For the later features (card payments, customer accounts, the Premium discount, splitting the code into modules, the tree picker, and the test/CI setup), I decided what to build and set the rules, and Claude wrote much of the code while I reviewed and tested each change. The Google Cloud and service-account setup would have taken me days to figure out alone; with coaching it took an afternoon.
 
 ## Next steps
 
