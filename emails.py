@@ -4,7 +4,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 
-from orders import size_label, tree_name
+from orders import describe_item
 
 
 def _send(msg):
@@ -13,36 +13,41 @@ def _send(msg):
         smtp.send_message(msg)
 
 
-def send_alert(data):
+def _trees(items):
+    return "".join(f"  - {describe_item(item)}\n" for item in items)
+
+
+def send_alert(details, items, total_cents):
     msg = EmailMessage()
-    msg["Subject"] = f"New tree order from {data['name']}"
+    msg["Subject"] = f"New tree order from {details['name']} ({details['order_id']})"
     msg["From"] = os.getenv("EMAIL_ADDRESS")
     msg["To"] = os.getenv("ALERT_TO")
     msg.set_content(
-        f"Name: {data['name']}\n"
-        f"Phone: {data['phone']}\n"
-        f"Tree: {data['quantity']} x {tree_name(data['species'])}, {size_label(data['tree_size'])}"
-        f"{' (flocked)' if data['flocked'] else ''}\n"
-        f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n"
-        f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
-        f"Notes: {data['delivery_notes']}\n"
-        f"Payment: {data['payment']}\n"
+        f"Order: {details['order_id']}\n"
+        f"Name: {details['name']}\n"
+        f"Phone: {details['phone']}\n"
+        f"Trees:\n{_trees(items)}"
+        f"Address: {details['street']} {details['apt']}, {details['city']} {details['zip']}\n"
+        f"Delivery: {details['delivery_date']}, {details['time_window']}\n"
+        f"Notes: {details['delivery_notes']}\n"
+        f"Payment: {details['payment']}\n"
+        f"Total: ${total_cents / 100:.2f}\n"
     )
     _send(msg)
 
 
-def send_confirmation(data):
+def send_confirmation(details, items, total_cents):
     msg = EmailMessage()
     msg["Subject"] = "Your Christmas tree order is confirmed"
     msg["From"] = os.getenv("EMAIL_ADDRESS")
-    msg["To"] = data["email"]
+    msg["To"] = details["email"]
     msg.set_content(
-        f"Hi {data['name']},\n\n"
+        f"Hi {details['name']},\n\n"
         f"Thanks for your order! Here are the details:\n\n"
-        f"Tree: {data['quantity']} x {tree_name(data['species'])}, {size_label(data['tree_size'])}"
-        f"{' (flocked)' if data['flocked'] else ''}\n"
-        f"Delivery: {data['delivery_date']}, {data['time_window']}\n"
-        f"Address: {data['street']} {data['apt']}, {data['city']} {data['zip']}\n\n"
-        f"We'll call you at {data['phone']} if we have any questions.\n"
+        f"Trees:\n{_trees(items)}"
+        f"Delivery: {details['delivery_date']}, {details['time_window']}\n"
+        f"Address: {details['street']} {details['apt']}, {details['city']} {details['zip']}\n"
+        f"Total: ${total_cents / 100:.2f}\n\n"
+        f"We'll call you at {details['phone']} if we have any questions.\n"
     )
     _send(msg)

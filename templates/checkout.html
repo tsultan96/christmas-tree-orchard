@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+
+<h1>Checkout</h1>
+
+<div class="overflow-auto snow-card">
+<table>
+    <thead><tr><th>Tree</th><th>Price</th></tr></thead>
+    <tbody>
+        {% for line in summary.lines %}
+        <tr>
+            <td>{{ line.item.quantity }} × {{ line.item.species | tree_name }}<br>
+                <small>{{ line.item.tree_size | size_label }}{% if line.item.flocked %}, flocked{% endif %}</small></td>
+            <td>${{ "%.2f" | format(line.subtotal / 100) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p>
+    {{ summary.trees }} tree{% if summary.trees != 1 %}s{% endif %}
+    {% if summary.dozen %}<br>12 or more trees: 10% off{% endif %}
+    {% if summary.premium %}<br>⭐ Premium: 5% off{% endif %}
+    <br><strong>Total: ${{ "%.2f" | format(summary.total / 100) }}</strong>
+    {% if summary.total != summary.before %}<small>(was ${{ "%.2f" | format(summary.before / 100) }})</small>{% endif %}
+</p>
+</div>
+
+{% if errors %}
+<article class="snow-card">
+    <p><strong>Please fix the following:</strong></p>
+    <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+<form method="post" class="snow-card">
+    <h2>Your details</h2>
+
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="{{ form.name }}" required>
+
+    <label for="email">Email</label>
+    {% if session.get("customer") %}
+    <input type="email" id="email" name="email" value="{{ session.get('customer') }}" readonly>
+    <small>Orders are saved to your account email.</small>
+    {% else %}
+    <input type="email" id="email" name="email" value="{{ form.email }}">
+    {% endif %}
+
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" value="{{ form.phone}}" required>
+
+
+
+    <h2>Delivery Address</h2>
+
+    <label for="street">Street address</label>
+    <input type="text" id="street" name="street" autocomplete="address-line1" value="{{form.street}}" required>
+
+    <label for="apt">Apt / unit (optional)</label>
+    <input type="text" id="apt" name="apt" autocomplete="address-line2" value="{{form.apt}}">
+
+    <label for="city">City</label>
+    <input type="text" id="city" name="city" value="{{ form.city or 'Arlington' }}" autocomplete="address-level2" required>
+
+    <label for="zip">ZIP code</label>
+    <input type="text" id="zip" name="zip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="postal-code" value="{{ form.zip }}" required>
+
+    <p>We deliver in Virginia only.</p>
+
+    <label for="delivery_date">Delivery Date</label>
+    <input type="date" id="delivery_date" name="delivery_date" value="{{ form.delivery_date }}" min="{{ today }}" required>
+
+    <label for="time_window">Time Window of Delivery</label>
+    <select id="time_window" name="time_window" required>
+        <option value="">Choose a time</option>
+        <option value="morning" {% if form.time_window == "morning" %}selected{% endif %}>Morning (9am–12pm)</option>
+        <option value="afternoon" {% if form.time_window == "afternoon" %}selected{% endif %}>Afternoon (12–4pm)</option>
+        <option value="evening" {% if form.time_window == "evening" %}selected{% endif %}>Evening (4–7pm)</option>
+    </select>
+
+    <label for="delivery_notes">Delivery Notes (Optional)</label>
+    <textarea id="delivery_notes" name="delivery_notes" rows="3" placeholder="Gate Code, Parking, Where to leave the Tree">{{ form.delivery_notes }}</textarea>
+
+    <h2>Payment</h2>
+
+    <fieldset>
+        <legend>How will you pay?</legend>
+
+        <label>
+            <input type="radio" name="payment" value="cash" {% if form.payment == "cash" %}checked{% endif %} required>
+            Cash on delivery
+        </label>
+        <label>
+            <input type="radio" name="payment" value="card" {% if form.payment == "card" %}checked{% endif %} required>
+            Credit/Debit Card
+        </label>
+
+    </fieldset>
+
+    <button type="submit">Place order</button>
+</form>
+
+{% endblock %}

@@ -3,9 +3,12 @@
 from datetime import date
 
 
-REQUIRED_FIELDS = {
+ITEM_FIELDS = {
     "species": "a tree type",
     "tree_size": "a tree size",
+}
+
+DETAIL_FIELDS = {
     "name": "your name",
     "phone": "your phone number",
     "street": "your street address",
@@ -14,6 +17,10 @@ REQUIRED_FIELDS = {
     "time_window": "a delivery time",
     "payment": "a payment method",
 }
+
+REQUIRED_FIELDS = {**ITEM_FIELDS, **DETAIL_FIELDS}
+
+MAX_CART_ITEMS = 20       # different tree lines in one cart
 
 SPECIES = {
     "fraser_fir": {"name": "Fraser fir", "about": "Soft needles, great needle retention", "image": "trees/fraser-fir.webp"},
@@ -42,6 +49,12 @@ def size_label(value):
     return value[:-2] + " ft" if value.endswith("ft") else value
 
 
+def describe_item(item):
+    """'2 x Douglas fir, 8 ft, flocked' - used on Stripe's page and in emails."""
+    text = f"{item['quantity']} x {tree_name(item['species'])}, {size_label(item['tree_size'])}"
+    return text + (", flocked" if item["flocked"] else "")
+
+
 PREMIUM_AFTER = 10        # delivered TREES (lifetime, across all orders) needed to become Premium
 PREMIUM_DISCOUNT = 0.05   # off every order after that
 
@@ -62,21 +75,30 @@ def is_premium(orders):
     return delivered_trees(orders) >= PREMIUM_AFTER
 
 
-def validate_order(data):
+def validate_item(item):
+    """Check one cart item: which tree, what size, how many."""
     errors = []
-
-    for field, label in REQUIRED_FIELDS.items():
-        if data[field] == "":
+    for field, label in ITEM_FIELDS.items():
+        if item[field] == "":
             errors.append(f"Please enter {label}.")
 
-    if data["species"] and data["species"] not in SPECIES:
+    if item["species"] and item["species"] not in SPECIES:
         errors.append("Please choose a tree from the list.")
 
-    if data["tree_size"] and data["tree_size"] not in PRICES:
+    if item["tree_size"] and item["tree_size"] not in PRICES:
         errors.append("Please choose a tree size from the list.")
 
-    if data["quantity"] is None or not 1 <= data["quantity"] <= 50:
+    if item["quantity"] is None or not 1 <= item["quantity"] <= 50:
         errors.append("Please enter a quantity between 1 and 50.")
+    return errors
+
+
+def validate_details(data):
+    """Check the checkout details: contact, address, delivery and payment."""
+    errors = []
+    for field, label in DETAIL_FIELDS.items():
+        if data[field] == "":
+            errors.append(f"Please enter {label}.")
 
     if data["delivery_date"]:
         try:
@@ -89,18 +111,48 @@ def validate_order(data):
     return errors
 
 
-def order_total(data, premium=False):
-    """Return the order total in cents, calculated from our own PRICES.
+def validate_order(data):
+    """A single-tree order: the item checks plus the checkout checks."""
+    return validate_item(data) + validate_details(data)
 
-    The dozen discount (one order of 12+) and the Premium discount (lifetime loyalty)
+
+def item_subtotal(item):
+    """Price of one cart line in dollars, before any discount."""
+    per_tree = PRICES[item["tree_size"]]
+    if item["flocked"]:
+        per_tree += FLOCKING_PRICE
+    return per_tree * item["quantity"]
+
+
+def tree_count(items):
+    return sum(item["quantity"] for item in items)
+
+
+def discount_factor(items, premium=False):
+    """What fraction of the price is paid after discounts.
+
+    The dozen discount (12+ trees in this cart) and the Premium discount (lifetime loyalty)
     are separate rewards, so both apply.
     """
-    per_tree = PRICES[data["tree_size"]]
-    if data["flocked"]:
-        per_tree += FLOCKING_PRICE
-    total = per_tree * data["quantity"]
-    if data["quantity"] >= 12:
-        total = total * (1 - DOZEN_DISCOUNT)
+    factor = 1.0
+    if tree_count(items) >= 12:
+        factor *= 1 - DOZEN_DISCOUNT
     if premium:
-        total = total * (1 - PREMIUM_DISCOUNT)
-    return round(total * 100)
+        factor *= 1 - PREMIUM_DISCOUNT
+    return factor
+
+
+def item_cents(item, factor):
+    """Price of one cart line in cents, after discounts."""
+    return round(item_subtotal(item) * factor * 100)
+
+
+def cart_total(items, premium=False):
+    """Total for the whole cart in cents, calculated from our own PRICES."""
+    factor = discount_factor(items, premium)
+    return sum(item_cents(item, factor) for item in items)
+
+
+def order_total(data, premium=False):
+    """Total in cents for a single-tree order (a cart with one line)."""
+    return cart_total([data], premium)

@@ -5,10 +5,45 @@
 <h1>Your cart</h1>
 
 {% if items %}
-    {# filled in when add-to-cart is built #}
+{% set removable = true %}
+<div class="overflow-auto snow-card">
+<table>
+    <thead><tr><th>Tree</th><th>Price</th>{% if removable %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+        {% for line in summary.lines %}
+        <tr>
+            <td>{{ line.item.quantity }} × {{ line.item.species | tree_name }}<br>
+                <small>{{ line.item.tree_size | size_label }}{% if line.item.flocked %}, flocked{% endif %}</small></td>
+            <td>${{ "%.2f" | format(line.subtotal / 100) }}</td>
+            {% if removable %}
+            <td>
+                <form method="post" action="{{ url_for('cart_remove') }}">
+                    <input type="hidden" name="index" value="{{ loop.index0 }}">
+                    <button type="submit" class="secondary outline">Remove</button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p>
+    {{ summary.trees }} tree{% if summary.trees != 1 %}s{% endif %}
+    {% if summary.dozen %}<br>12 or more trees: 10% off{% endif %}
+    {% if summary.premium %}<br>⭐ Premium: 5% off{% endif %}
+    <br><strong>Total: ${{ "%.2f" | format(summary.total / 100) }}</strong>
+    {% if summary.total != summary.before %}<small>(was ${{ "%.2f" | format(summary.before / 100) }})</small>{% endif %}
+</p>
+</div>
+
+<div class="cart-actions">
+    <a href="{{ url_for('order') }}" role="button" class="secondary outline">Add another tree</a>
+    <a href="{{ url_for('checkout') }}" role="button">Checkout</a>
+</div>
 {% else %}
 <article class="snow-card">
     <p>Your cart is empty.</p>
+    <a href="{{ url_for('order') }}" role="button">Choose a tree</a>
 </article>
 {% endif %}
 

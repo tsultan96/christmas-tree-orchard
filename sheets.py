@@ -1,6 +1,7 @@
 """Everything that reads or writes the Google Sheet."""
 
 import os
+import secrets
 from datetime import datetime
 
 import gspread
@@ -26,31 +27,42 @@ def get_customers_sheet():
 
 # ---------- orders ----------
 
-def save_order(data):
-    """Append the order as a new row and return its row number."""
-    row = [
-        datetime.now().strftime("%Y-%m-%d %H:%M"),
-        data["name"],
-        data["phone"],
-        data["email"],
-        data["species"],
-        data["tree_size"],
-        data["quantity"],
-        "Yes" if data["flocked"] else "No",
-        data["street"],
-        data["apt"],
-        data["city"],
-        data["zip"],
-        data["delivery_date"],
-        data["time_window"],
-        data["delivery_notes"],
-        data["payment"],
-        "No",
-        "Cash" if data["payment"] == "cash" else "No",
-    ]
-    result = get_sheet().append_row(row)
-    updated_range = result["updates"]["updatedRange"]   # e.g. "Sheet1!A23:R23"
-    return int(updated_range.split("!")[1].split(":")[0][1:])
+def new_order_id():
+    """A short, readable, unique-enough ID for one checkout, e.g. 'T1112-153045-7f3a'."""
+    return "T" + datetime.now().strftime("%m%d-%H%M%S") + "-" + secrets.token_hex(2)
+
+
+def save_cart_order(details, items, order_id):
+    """Append one row per cart item (all sharing the order ID). Return their row numbers."""
+    rows = []
+    for item in items:
+        rows.append([
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            details["name"],
+            details["phone"],
+            details["email"],
+            item["species"],
+            item["tree_size"],
+            item["quantity"],
+            "Yes" if item["flocked"] else "No",
+            details["street"],
+            details["apt"],
+            details["city"],
+            details["zip"],
+            details["delivery_date"],
+            details["time_window"],
+            details["delivery_notes"],
+            details["payment"],
+            "No",
+            "Cash" if details["payment"] == "cash" else "No",
+            order_id,
+        ])
+    result = get_sheet().append_rows(rows)
+    updated_range = result["updates"]["updatedRange"]   # e.g. "Sheet1!A23:S25"
+    first, last = updated_range.split("!")[1].split(":")
+    first_row = int(first.lstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+    last_row = int(last.lstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+    return list(range(first_row, last_row + 1))
 
 
 TIME_ORDER = {"morning": 0, "afternoon": 1, "evening": 2}
@@ -80,8 +92,11 @@ def set_delivered(row, delivered):
     get_sheet().update_cell(row, DELIVERED_COLUMN, "Yes" if delivered else "No")
 
 
-def set_paid(row):
-    get_sheet().update_cell(row, PAID_COLUMN, "Yes")
+def set_paid(rows):
+    """Mark every row of one paid checkout as paid."""
+    sheet = get_sheet()
+    for row in rows:
+        sheet.update_cell(row, PAID_COLUMN, "Yes")
 
 
 # ---------- customers ----------

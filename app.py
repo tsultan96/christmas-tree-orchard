@@ -9,11 +9,15 @@ from werkzeug.security import check_password_hash
 
 from emails import send_alert, send_confirmation
 from orders import (
-    DOZEN_DISCOUNT, FLOCKING_PRICE, PREMIUM_AFTER, PRICES, SPECIES,
-    delivered_trees, is_premium, order_total, size_label, tree_name, validate_order,
+    DOZEN_DISCOUNT, FLOCKING_PRICE, MAX_CART_ITEMS, PREMIUM_AFTER, PRICES, SPECIES,
+    cart_total, delivered_trees, discount_factor, is_premium, item_cents, item_subtotal,
+    size_label, tree_count, tree_name, validate_details, validate_item,
 )
-from payments import create_checkout, paid_row
-from sheets import create_customer, find_customer, get_orders_for_customer, get_orders_for_month, save_order, set_delivered, set_paid
+from payments import create_checkout, paid_rows
+from sheets import (
+    create_customer, find_customer, get_orders_for_customer, get_orders_for_month,
+    new_order_id, save_cart_order, set_delivered, set_paid,
+)
 
 
 load_dotenv()
@@ -43,9 +47,36 @@ def index():
     )
 
 
+def cart_summary(items, premium):
+    """Everything the cart and checkout pages show about prices."""
+    factor = discount_factor(items, premium)
+    return {
+        "lines": [{"item": item, "subtotal": item_subtotal(item) * 100, "cents": item_cents(item, factor)} for item in items],
+        "trees": tree_count(items),
+        "dozen": tree_count(items) >= 12,
+        "premium": premium,
+        "before": sum(item_subtotal(item) * 100 for item in items),
+        "total": cart_total(items, premium),
+    }
+
+
 @app.route("/cart")
 def cart():
-    return render_template("cart.html", items=session.get("cart", []))
+    items = session.get("cart", [])
+    return render_template("cart.html", items=items, summary=cart_summary(items, current_customer_is_premium()))
+
+
+@app.route("/cart/remove", methods=["POST"])
+def cart_remove():
+    items = session.get("cart", [])
+    try:
+        index = int(request.form.get("index", ""))
+    except ValueError:
+        return redirect(url_for("cart"))
+    if 0 <= index < len(items):
+        items = items[:index] + items[index + 1:]
+        session["cart"] = items
+    return redirect(url_for("cart"))
 
 
 @app.route("/member")
@@ -133,65 +164,87 @@ def current_customer_is_premium():
 
 @app.route("/order", methods=["GET", "POST"])
 def order():
-    premium = current_customer_is_premium()
+    """Pick a tree, size, quantity and flocking, then add it to the cart."""
     if request.method == "POST":
-        order_data = {
+        item = {
             "species": request.form.get("species", "").strip(),
             "tree_size": request.form.get("tree_size", "").strip(),
             "flocked": request.form.get("flocked") == "yes",
-            "name": request.form.get("name", "").strip(),
-            "email": request.form.get("email", "").strip(),
-            "phone": request.form.get("phone", "").strip(),
-            "street": request.form.get("street", "").strip(),
-            "apt": request.form.get("apt", "").strip(),
-            "city": request.form.get("city", "").strip(),
-            "zip": request.form.get("zip", "").strip(),
-            "delivery_date": request.form.get("delivery_date", "").strip(),
-            "time_window": request.form.get("time_window", "").strip(),
-            "delivery_notes": request.form.get("delivery_notes", "").strip(),
-            "payment": request.form.get("payment", "").strip(),
+        }
+        try:
+            item["quantity"] = int(request.form.get("quantity", ""))
+        except ValueError:
+            item["quantity"] = None
+
+        errors = validate_item(item)
+        items = session.get("cart", [])
+        if len(items) >= MAX_CART_ITEMS:
+            errors.append(f"Your cart can hold up to {MAX_CART_ITEMS} different trees.")
+        if errors:
+            return render_template("order.html", errors=errors, form=item)
+
+        # assign a new list (not .append) so Flask notices the session changed
+        session["cart"] = items + [item]
+        return redirect(url_for("cart"))
+    return render_template("order.html", form={})
+
+
+@app.route("/checkout", methods=["GET", "POST"])
+def checkout():
+    """Contact, delivery and payment for everything in the cart."""
+    items = session.get("cart", [])
+    if not items:
+        return redirect(url_for("cart"))
+    premium = current_customer_is_premium()
+    summary = cart_summary(items, premium)
+
+    if request.method == "POST":
+        details = {
+            field: request.form.get(field, "").strip()
+            for field in ["name", "email", "phone", "street", "apt", "city", "zip",
+                          "delivery_date", "time_window", "delivery_notes", "payment"]
         }
         if session.get("customer"):
             # always file a member's order under their account email, whatever was typed,
             # so it shows up in My orders and counts toward Premium
-            order_data["email"] = session["customer"]
+            details["email"] = session["customer"]
 
-        try:
-            order_data["quantity"] = int(request.form.get("quantity", ""))
-        except ValueError:
-            order_data["quantity"] = None
-        errors = validate_order(order_data)
+        errors = validate_details(details)
         if errors:
-            return render_template("order.html", errors=errors, form=order_data, premium=premium, today=date.today().isoformat())
+            return render_template("checkout.html", errors=errors, form=details, summary=summary,
+                                   today=date.today().isoformat())
 
-        order_data["premium"] = premium
-        order_data["total"] = order_total(order_data, premium)  # cents
-        row = save_order(order_data)
+        details["order_id"] = new_order_id()
+        rows = save_cart_order(details, items, details["order_id"])
         try:
-            send_alert(order_data)
-            if order_data["email"]:
-                send_confirmation(order_data)
+            send_alert(details, items, summary["total"])
+            if details["email"]:
+                send_confirmation(details, items, summary["total"])
         except Exception as e:
             print(f"Alert email failed: {e}")
 
-        if order_data["payment"] == "card":
-            session["last_order"] = order_data
-            return redirect(create_checkout(order_data, row, premium))
-        return render_template("thanks.html", order=order_data)
+        order = {**details, "items": items, "total": summary["total"], "premium": premium}
+        if details["payment"] == "card":
+            session["last_order"] = order
+            return redirect(create_checkout(items, rows, premium))  # cart is kept until payment succeeds
+        session["cart"] = []
+        return render_template("thanks.html", order=order)
+
     form = {}
     if session.get("customer"):
         customer = find_customer(session["customer"])
         if customer:
             form = {"name": customer["Name"], "email": customer["Email"], "phone": customer["Phone"]}
-    return render_template("order.html", form=form, premium=premium, today=date.today().isoformat())
+    return render_template("checkout.html", form=form, summary=summary, today=date.today().isoformat())
 
 
 @app.route("/paid")
 def paid():
-    row = paid_row(request.args.get("session_id", ""))
-    if row is None:
+    rows = paid_rows(request.args.get("session_id", ""))
+    if rows is None:
         return redirect(url_for("index"))
-    set_paid(row)
+    set_paid(rows)
+    session["cart"] = []
     order = session.get("last_order")
     if not order:
         return redirect(url_for("index"))

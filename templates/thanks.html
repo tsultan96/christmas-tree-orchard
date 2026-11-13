@@ -12,7 +12,10 @@
         <p>We got your order and will call you at {{ order.phone }} to confirm.</p>
 
         <article>
-            <p><strong>{{ order.quantity }} × {{ order.species | tree_name }}</strong>, {{ order.tree_size | size_label }}{% if order.flocked %}, flocked{% endif %}</p>
+            {% for item in order["items"] %}
+            <p><strong>{{ item.quantity }} × {{ item.species | tree_name }}</strong>, {{ item.tree_size | size_label }}{% if item.flocked %}, flocked{% endif %}</p>
+            {% endfor %}
+            <p><small>Order {{ order.order_id }}</small></p>
             <p>Delivery: {{ order.delivery_date }}, {{ order.time_window }}</p>
             <p>{{ order.street }} {{ order.apt }}, {{ order.city }} {{ order.zip }}</p>
             {% if order.total %}

@@ -150,6 +150,11 @@ h1, h2, h3, label, legend { color: #ffffff; }
 .tree-card:has(input:focus-visible) { outline: 3px solid rgba(46, 160, 67, 0.7); outline-offset: 2px; }
 @media (max-width: 900px) { .tree-picker { grid-template-columns: repeat(2, 1fr); } }
 
+/* cart page: buttons side by side, table buttons compact */
+.cart-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
+.cart-actions [role="button"] { margin: 0; }
+.snow-card td form { margin: 0; }
+
 /* top bar with the cart, top-right of the content area */
 .topbar {
     display: flex;

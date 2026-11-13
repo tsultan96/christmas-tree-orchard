@@ -12,10 +12,11 @@ Built as a two-week learning project to refresh my Python skills.
 
 **Customers**
 - Landing page: tree types, sizes, and prices (prices are placeholders), all rendered from one `PRICES` table
-- Order form with a tree picker of photo cards; validated in the browser and on the server, and keeps the customer's input after an error
+- Shopping cart: pick trees from photo cards (size, quantity, flocking), add several kinds to the cart, remove lines, and check out once with one address and one payment
+- Checkout validated in the browser and on the server, keeping the customer's input after an error
 - Card payments: Stripe Checkout in test mode. Try card `4242 4242 4242 4242` with any future expiry date, any CVC, and any ZIP. No real money is charged.
 - Order as a guest, or sign up / log in. Logged-in customers get the order form pre-filled and a **My orders** page with delivery and payment status
-- Premium loyalty: once 10 trees have been delivered to a customer (counted across all their orders), every new order is 5% off (stacks with the 10% dozen discount)
+- Premium loyalty: once 10 trees have been delivered to a customer (counted across all their orders), every new order is 5% off (stacks with the 10% discount for 12+ trees in one cart)
 
 **Staff**
 - Separate staff login (linked from the footer) that leads to a monthly deliveries table: date, customer, address, tree, notes, payment status (Paid / Cash / Unpaid), and a Mark delivered / undo button
@@ -23,6 +24,7 @@ Built as a two-week learning project to refresh my Python skills.
 
 **Behind the scenes**
 - Google Sheets as the database: an orders tab and a Customers tab, accessed through a service account
+- One sheet row per cart line, grouped by an Order ID, so staff see exactly what to load for each delivery
 - A Paid column that Stripe confirmation flips to "Yes", so abandoned card checkouts are easy to spot
 
 ## Tech
@@ -47,14 +49,13 @@ Imports only point toward `app.py`, so there are no circular imports.
 ## How it works
 
 ```
-Browser form ──POST /order──▶ validate_order() ──▶ save_order() ──▶ Google Sheet
-                                    │                    │
-                              errors? show form     send_alert() ──▶ business inbox
-                              with values kept      send_confirmation() ──▶ customer
-                                                         │
-                                         paying by card? create_checkout() ──▶ Stripe page
-                                                         │
-                                         /paid confirms with Stripe ──▶ thank-you page
+/order ──Add to cart──▶ validate_item() ──▶ cart in the session ──▶ /cart (remove lines, see total)
+                                                                        │
+/checkout ──▶ validate_details() ──▶ cart_total() ──▶ save_cart_order() ──▶ Google Sheet (one row per line)
+                                                           │
+                                     send_alert() / send_confirmation() ──▶ business inbox / customer
+                                                           │
+                       paying by card? create_checkout() ──▶ Stripe page ──▶ /paid confirms ──▶ thank-you page
 ```
 
 ## Run it locally
@@ -70,7 +71,7 @@ Browser form ──POST /order──▶ validate_order() ──▶ save_order() 
 2. Google Sheets: create a Google Cloud project, enable the Sheets API, create a service account,
    download its JSON key as `credentials.json`, and share your sheet with the service account's email.
    The spreadsheet needs two tabs with these header rows:
-   - first tab (orders): `Timestamp, Name, Phone, Email, Species, Size, Quantity, Flocked, Street, Apt, City, ZIP, Delivery date, Time window, Notes, Payment, Delivered, Paid`
+   - first tab (orders): `Timestamp, Name, Phone, Email, Species, Size, Quantity, Flocked, Street, Apt, City, ZIP, Delivery date, Time window, Notes, Payment, Delivered, Paid, Order ID`
    - `Customers`: `Email, Name, Phone, Password hash, Created`
 3. Gmail: create an App Password for the sending account.
 4. Stripe: create an account, switch to the sandbox (test mode), and copy the secret key (`sk_test_...`).
@@ -120,10 +121,9 @@ I built the project in small pieces, getting each one working before starting th
 
 I tested every piece as I went, in the browser and directly in the Python shell (for example, calling `validate_order()` with bad data the browser would normally block), and committed after each working step.
 
-I wrote the first part of the project myself (the order form, server-side validation, Google Sheets storage, email alerts, and the staff page), with Claude as a coach: it explained new concepts, reviewed each piece, and helped me debug. For the later features (card payments, customer accounts, the Premium discount, splitting the code into modules, the tree picker, and the test/CI setup), I decided what to build and set the rules, and Claude wrote much of the code while I reviewed and tested each change. The Google Cloud and service-account setup would have taken me days to figure out alone; with coaching it took an afternoon.
+I wrote the first part of the project myself (the order form, server-side validation, Google Sheets storage, email alerts, and the staff page), with Claude as a coach: it explained new concepts, reviewed each piece, and helped me debug. For the later features (card payments, customer accounts, the Premium discount, splitting the code into modules, the tree picker, the shopping cart, and the test/CI setup), I decided what to build and set the rules, and Claude wrote much of the code while I reviewed and tested each change. The Google Cloud and service-account setup would have taken me days to figure out alone; with coaching it took an afternoon.
 
 ## Next steps
 
-- A real cart, so one checkout can include several kinds of trees
 - Send emails through an HTTPS email API so alerts also work on the free hosting tier
 - Spanish/English switch
